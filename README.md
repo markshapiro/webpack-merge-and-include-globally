@@ -24,15 +24,15 @@ because your `node_modules` is not available in production.
     plugins: [
        new MergeIntoSingleFilePlugin({
           "vendor.js":[
-            __dirname+'/node_modules/jquery/dist/jquery.js',
-            __dirname+'/node_modules/moment/moment.js',
-            __dirname+'/node_modules/moment/locale/cs.js',
-            __dirname+'/node_modules/moment/locale/de.js',
-            __dirname+'/node_modules/moment/locale/nl.js',
-            __dirname+'/node_modules/toastr/build/toastr.min.js'
+            'node_modules/jquery/dist/jquery.js',
+            'node_modules/moment/moment.js',
+            'node_modules/moment/locale/cs.js',
+            'node_modules/moment/locale/de.js',
+            'node_modules/moment/locale/nl.js',
+            'node_modules/toastr/build/toastr.min.js'
           ],
           "vendor.css":[
-            __dirname+'/node_modules/toastr/build/toastr.min.css'
+            'node_modules/toastr/build/toastr.min.css'
           ]
        }),
     ]

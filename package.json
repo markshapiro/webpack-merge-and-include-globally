@@ -26,7 +26,8 @@
     "global",
     "js",
     "merge",
-    "concat"
+    "concat",
+    "global library"
   ],
   "repository": {
     "type": "git",
