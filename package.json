@@ -22,7 +22,12 @@
     "jquery": "^3.2.1"
   },
   "dependencies": {},
-  "keywords": [],
+  "keywords": [
+    "global",
+    "js",
+    "merge",
+    "concat"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/markshapiro/webpack-merge-and-include-globally.git"
