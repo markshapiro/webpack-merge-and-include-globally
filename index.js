@@ -39,7 +39,6 @@ MergeIntoFile.prototype.apply = function(compiler) {
                 if(file2createCnt===count){
                   callback();
                 }
-
             });
          })(filename);
     }
