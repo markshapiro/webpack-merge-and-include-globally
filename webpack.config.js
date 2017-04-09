@@ -19,9 +19,9 @@ var webpackConfig = {
   plugins: [
     new MergeIntoSingle({
       'vendor.js':[
-          '/node_modules/jquery/dist/jquery.js',
-          '/node_modules/classnames/index.js',
-          '/node_modules/humps/humps.js'
+          __dirname+'/node_modules/jquery/dist/jquery.js',
+          __dirname+'/node_modules/classnames/index.js',
+          __dirname+'/node_modules/humps/humps.js'
       ]
     })
   ],

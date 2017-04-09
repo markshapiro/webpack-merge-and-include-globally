@@ -6,7 +6,7 @@ var fs=require('fs');
 function mergeFiles(list, callback, ind){
   if(!ind) ind=0;
   if(ind>=list.length) return callback(null, "");
-  fs.readFile(__dirname+list[ind], "utf-8", (err, body)=>{
+  fs.readFile(list[ind], "utf-8", (err, body)=>{
     if(err) return callback(err);
     mergeFiles(list, (err, otherFilesBody)=>{
       if(err) return callback(err);
