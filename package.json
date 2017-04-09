@@ -1,14 +1,13 @@
 {
   "name": "webpack-merge-and-include-globally",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Merge multiple files (js,css..) into single file to include somewhere",
   "scripts": {
     "build": "webpack --inline --colors --progress --display-error-details --display-cached && cp example/index.html dist/index.html",
     "server": "webpack-dev-server --inline --colors --progress --display-error-details --display-cached --port 3000  --content-base example",
     "start": "npm run server"
   },
-  "contributors": [
-  ],
+  "contributors": [],
   "devDependencies": {
     "babel-core": "^6.18.2",
     "babel-jest": "^18.0.0",
@@ -22,10 +21,8 @@
     "humps": "^2.0.0",
     "jquery": "^3.2.1"
   },
-  "dependencies": {
-  },
-  "keywords": [
-  ],
+  "dependencies": {},
+  "keywords": [],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/markshapiro/webpack-merge-and-include-globally.git"
