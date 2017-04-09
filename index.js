@@ -1,6 +1,7 @@
 function MergeIntoFile(options) {
   this.options=options;
 }
+
 var fs=require('fs');
 
 function mergeFiles(list, callback, ind){
@@ -23,12 +24,9 @@ MergeIntoFile.prototype.apply = function(compiler) {
     for (var filename in options) {
         var files = options[filename];
         file2createCnt++;
-
           (function(filenaname2create){
-
             mergeFiles(files, (err, content)=>{
                 if(err) return callback(err);
-
                 compilation.assets[filenaname2create] = {
                   source: function() {
                     return content;
@@ -43,9 +41,7 @@ MergeIntoFile.prototype.apply = function(compiler) {
                 }
 
             });
-
-         })(filename)
-        
+         })(filename);
     }
   });
 };
