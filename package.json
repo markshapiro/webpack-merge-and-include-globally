@@ -1,0 +1,38 @@
+{
+  "name": "webpack-merge-and-include-globally",
+  "version": "0.0.0",
+  "description": "Merge multiple files (js,css..) into single file to include somewhere",
+  "scripts": {
+    "build": "webpack --inline --colors --progress --display-error-details --display-cached && cp example/index.html dist/index.html",
+    "server": "webpack-dev-server --inline --colors --progress --display-error-details --display-cached --port 3000  --content-base example",
+    "start": "npm run server"
+  },
+  "contributors": [
+  ],
+  "devDependencies": {
+    "babel-core": "^6.18.2",
+    "babel-jest": "^18.0.0",
+    "babel-loader": "^6.2.9",
+    "install": "^0.8.8",
+    "npm": "^4.4.4",
+    "raw-loader": "^0.5.1",
+    "webpack": "^1.12.9",
+    "webpack-dev-server": "^1.14.0",
+    "classnames": "^2.2.5",
+    "humps": "^2.0.0",
+    "jquery": "^3.2.1"
+  },
+  "dependencies": {
+  },
+  "keywords": [
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://<link>.git"
+  },
+  "bugs": {
+    "url": "https://<link>/issues"
+  },
+  "homepage": "https://<link>#readme",
+  "licenses": []
+}
