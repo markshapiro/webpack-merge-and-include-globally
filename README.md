@@ -43,7 +43,7 @@ this generates 2 files with merged js and css content, include them into your `i
   <script src="/vendor.js"></script>
   <link rel="stylesheet" href="/vendor.css">
 ```
-now `jQuery`,`moment` and `toastr` are available globally throughout your application.
+now `jQuery`, `moment` and `toastr` are available globally throughout your application.
 
 working example already included in project.
 <br/>to test first install `npm i`, then run `npm run start` to see it in action
