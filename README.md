@@ -13,7 +13,7 @@ Lets say you want to make libraries like `jquery`, `moment` (including 3 languag
   
   <link rel="stylesheet" href="/node_modules/toastr/build/toastr.min.css">
 ```
-because your `node_modules` is not avaialble in production.
+because your `node_modules` is not available in production.
 <br/>with this plugin you can achieve the desired effect this way:
 ``` javascript
 
