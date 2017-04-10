@@ -41,7 +41,7 @@ because your `node_modules` is not avaialble in production.
     ]
 
 ```
-this generates 2 files which you can include in your `index.html`:
+this generates 2 files with merged js and css content, include into your `index.html` to take effect:
 ``` html
   <script src="/vendor.js"></script>
   <link rel="stylesheet" href="/vendor.css">
