@@ -28,11 +28,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://<link>.git"
+    "url": "git+https://github.com/markshapiro/webpack-merge-and-include-globally.git"
   },
   "bugs": {
-    "url": "https://<link>/issues"
+    "url": "https://github.com/markshapiro/webpack-merge-and-include-globally/issues"
   },
-  "homepage": "https://<link>#readme",
+  "homepage": "https://github.com/markshapiro/webpack-merge-and-include-globally#readme",
   "licenses": []
 }
