@@ -44,5 +44,5 @@ this generates 2 files with merged js and css content, include into your `index.
   <link rel="stylesheet" href="/vendor.css">
 ```
 
-<b>NOTE: use this only if you're webpack noobie who wants to get things working fast.
+<b>NOTE: use this only if you're webpack noobie who wants to get things finished fast.
 <br/>The correct way for most cases like this is to use `expose-loader` or `webpack.ProvidePlugin`</b>
