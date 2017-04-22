@@ -40,8 +40,8 @@ because your `node_modules` is not available in production.
 ```
 this generates 2 files with merged js and css content, include them into your `index.html` to take effect:
 ``` html
-  <script src="/vendor.js"></script>
-  <link rel="stylesheet" href="/vendor.css">
+  <script src="./vendor.js"></script>
+  <link rel="stylesheet" href="./vendor.css">
 ```
 now `jQuery`, `moment` and `toastr` are available globally throughout your application.
 
