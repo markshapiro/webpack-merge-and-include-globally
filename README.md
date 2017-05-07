@@ -1,5 +1,7 @@
 # MERGE INTO SINGLE FILE PLUGIN FOR WEBPACK
 
+Webpack plugin to merge your source files together into single file, to be included in index.html, and achieving same effect as you would by including them all separately through `<script>` or `<link>`.
+
 ### Getting Started
 
 ```bash
