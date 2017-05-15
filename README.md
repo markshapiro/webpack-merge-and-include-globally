@@ -59,5 +59,5 @@ working example already included in project.
 <br/>to test first install `npm i`, then run `npm run start` to see it in action
 <br/>and `npm run build` to build prod files with vendor file and `index.html`.
 
-<b>NOTE: use this only if you're webpack noobie who wants to get things finished fast.
+<b>NOTE: use this only if only want to get things finished fast.
 <br/>The correct way for most cases like this is to use `expose-loader` or `webpack.ProvidePlugin`</b>
