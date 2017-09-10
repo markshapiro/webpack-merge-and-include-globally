@@ -16,7 +16,7 @@ Lets say you want to make libraries like `jquery`, `moment` (including 3 languag
   <script src="/node_modules/moment/moment.js"></script>
   <script src="/node_modules/moment/locale/cs.js"></script>
   <script src="/node_modules/moment/locale/de.js"></script>
-  <script src="/node_modules/moment/locale/cs.js"></script>
+  <script src="/node_modules/moment/locale/nl.js"></script>
   <script src="/node_modules/toastr/build/toastr.min.js"></script>
   
   <link rel="stylesheet" href="/node_modules/toastr/build/toastr.min.css">
