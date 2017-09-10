@@ -30,19 +30,21 @@ because your `node_modules` is not available in production.
   module.exports = {
     ...
     plugins: [
-       new MergeIntoSingleFilePlugin({
-          "vendor.js":[
-            'node_modules/jquery/dist/jquery.js',
-            'node_modules/moment/moment.js',
-            'node_modules/moment/locale/cs.js',
-            'node_modules/moment/locale/de.js',
-            'node_modules/moment/locale/nl.js',
-            'node_modules/toastr/build/toastr.min.js'
-          ],
-          "vendor.css":[
-            'node_modules/toastr/build/toastr.min.css'
-          ]
-       }),
+        new MergeIntoSingleFilePlugin({
+            files: {
+                "vendor.js": [
+                    'node_modules/jquery/dist/jquery.js',
+                    'node_modules/moment/moment.js',
+                    'node_modules/moment/locale/cs.js',
+                    'node_modules/moment/locale/de.js',
+                    'node_modules/moment/locale/nl.js',
+                    'node_modules/toastr/build/toastr.min.js'
+                ],
+                "vendor.css": [
+                    'node_modules/toastr/build/toastr.min.css'
+                ]
+            }
+        }),
     ]
 
 ```
