@@ -73,7 +73,7 @@ new MergeIntoSingle({
 
 #### transform
 
-As an object that maps resulting file names to tranform methods that will be applied on merged content before saving. Use to minify / uglify the result.
+Object that maps resulting file names to tranform methods that will be applied on merged content before saving. Use to minify / uglify the result.
 <br/>For example to minify the final merge result of `vendor.js`, do:
 ```
 new MergeIntoSingle({
