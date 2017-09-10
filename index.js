@@ -17,16 +17,20 @@ function mergeFiles(list, callback, ind){
 }
 
 MergeIntoFile.prototype.apply = function(compiler) {
-  var options = this.options;
+  var resultFiles = this.options.files;
+  var transform = this.options.transform;
   compiler.plugin('emit', function(compilation, callback) {
     var count=0;
     var file2createCnt=0;
-    for (var filename in options) {
-        var files = options[filename];
+    for (var filename in resultFiles) {
+        var files = resultFiles[filename];
         file2createCnt++;
           (function(filenaname2create){
             mergeFiles(files, (err, content)=>{
                 if(err) return callback(err);
+                if(transform && typeof transform[filenaname2create] === 'function'){
+                  content = transform[filenaname2create](content);
+                }
                 compilation.assets[filenaname2create] = {
                   source: function() {
                     return content;

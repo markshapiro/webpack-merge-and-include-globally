@@ -53,6 +53,37 @@ this generates 2 files with merged js and css content, include them into your `i
 ```
 now `jQuery`, `moment` and `toastr` are available globally throughout your application.
 
+### Options
+
+#####files
+
+Object that maps file names to array of all files that will be merged together and saved under that file name.
+<br/>For example to merge `jquery`, `classnames` and `humps` into `vendor.js`, do:
+```
+new MergeIntoSingle({
+  files:{
+    'vendor.js':[
+      'node_modules/jquery/dist/jquery.js',
+      'node_modules/classnames/index.js',
+      'node_modules/humps/humps.js'
+    ]
+  }
+})
+```
+
+#####transform
+
+As an object that maps resulting file names to tranform methods that will be applied on merged content before saving. Use to minify / uglify the result.
+<br/>For example to minify the final merge result of `vendor.js`, do:
+```
+new MergeIntoSingle({
+  files:{ 'vendor.js':[...] },
+  transform:{
+    'vendor.js': code => require("uglify-js").minify(code).code
+  }
+})
+```
+
 ### Working Example
 
 working example already included in project.

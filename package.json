@@ -12,14 +12,15 @@
     "babel-core": "^6.18.2",
     "babel-jest": "^18.0.0",
     "babel-loader": "^6.2.9",
-    "install": "^0.8.8",
-    "npm": "^4.4.4",
-    "raw-loader": "^0.5.1",
-    "webpack": "^1.12.9",
-    "webpack-dev-server": "^1.14.0",
     "classnames": "^2.2.5",
     "humps": "^2.0.0",
-    "jquery": "^3.2.1"
+    "install": "^0.8.8",
+    "jquery": "^3.2.1",
+    "npm": "^4.4.4",
+    "raw-loader": "^0.5.1",
+    "uglify-js": "^3.0.28",
+    "webpack": "^1.12.9",
+    "webpack-dev-server": "^1.14.0"
   },
   "dependencies": {},
   "keywords": [
