@@ -59,7 +59,7 @@ now `jQuery`, `moment` and `toastr` are available globally throughout your appli
 
 Object that maps file names to array of all files that will be merged together and saved under that file name.
 <br/>For example to merge `jquery`, `classnames` and `humps` into `vendor.js`, do:
-```
+``` javascript
 new MergeIntoSingle({
   files:{
     'vendor.js':[
@@ -75,7 +75,7 @@ new MergeIntoSingle({
 
 Object that maps resulting file names to tranform methods that will be applied on merged content before saving. Use to minify / uglify the result.
 <br/>For example to minify the final merge result of `vendor.js`, do:
-```
+``` javascript
 new MergeIntoSingle({
   files:{ 'vendor.js':[...] },
   transform:{
