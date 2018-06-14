@@ -19,7 +19,7 @@ function mergeFiles(list, callback, ind){
 function run(self) {
   var resultFiles = self.options.files;
   var transform = self.options.transform;
-  return function foo(compilation, callback) {
+  return function (compilation, callback) {
     var count=0;
     var file2createCnt=0;
     for (var filename in resultFiles) {
