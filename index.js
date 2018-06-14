@@ -16,10 +16,10 @@ function mergeFiles(list, callback, ind){
   })
 }
 
-MergeIntoFile.prototype.apply = function(compiler) {
-  var resultFiles = this.options.files;
-  var transform = this.options.transform;
-  compiler.plugin('emit', function(compilation, callback) {
+function run(self) {
+  var resultFiles = self.options.files;
+  var transform = self.options.transform;
+  return function foo(compilation, callback) {
     var count=0;
     var file2createCnt=0;
     for (var filename in resultFiles) {
@@ -46,7 +46,16 @@ MergeIntoFile.prototype.apply = function(compiler) {
             });
          })(filename);
     }
-  });
+  }
+}
+
+MergeIntoFile.prototype.apply = function(compiler) {
+  if (compiler.hooks) {
+    const plugin = { name: 'MergeIntoFile' };
+    compiler.hooks.emit.tapAsync(plugin, run(this));
+  } else {
+    compiler.plugin('emit', run(this));
+  }
 };
 
 module.exports = MergeIntoFile;
