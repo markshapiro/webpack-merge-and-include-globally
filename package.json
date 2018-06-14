@@ -1,6 +1,6 @@
 {
   "name": "webpack-merge-and-include-globally",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Merge multiple files (js,css..) into single file to include somewhere",
   "scripts": {
     "build": "webpack --inline --colors --progress --display-error-details --display-cached && cp example/index.html dist/index.html",
