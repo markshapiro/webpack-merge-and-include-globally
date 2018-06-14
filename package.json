@@ -24,11 +24,13 @@
   },
   "dependencies": {},
   "keywords": [
+    "webpack",
     "global",
     "js",
     "merge",
     "concat",
-    "global library"
+    "global library",
+    "expose"
   ],
   "repository": {
     "type": "git",
