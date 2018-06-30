@@ -32,7 +32,7 @@ class MergeIntoFile {
   async run(compilation, callback) {
     const { files, transform, ordered, encoding } = this.options;
     const finalPromises = Object.keys(files).map(async (newFile) => {
-      const listOfLists = await Promise.all(files[newFile].map(path => listFiles(path, {})));
+      const listOfLists = await Promise.all(files[newFile].map(path => listFiles(path, null)));
       const flattenedList = Array.prototype.concat.apply([], listOfLists);
       const filesContentPromises = flattenedList.map(path => readFile(path, encoding || 'utf-8'));
       let content = await (ordered ? consequently : parallely)(filesContentPromises, '\n');
