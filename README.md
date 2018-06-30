@@ -34,7 +34,8 @@ because your `node_modules` is not available in production.
             files: {
                 "vendor.js": [
                     'node_modules/jquery/dist/jquery.min.js',
-                    //  'node_modules/jquery/**/*.min.js',  //  will work too
+                    //  will work too
+                    //  'node_modules/jquery/**/*.min.js',
                     'node_modules/moment/moment.js',
                     'node_modules/moment/locale/cs.js',
                     'node_modules/moment/locale/de.js',
