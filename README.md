@@ -61,7 +61,7 @@ now `jQuery`, `moment` and `toastr` are available globally throughout your appli
 
 #### files
 
-Object that maps file names to array of all files (can also be defined by wildcard path) that will be merged together and saved under that file name.
+Object that maps file names to array of all files (can also be defined by wildcard path) that will be merged together and saved under each file name.
 <br/>For example to merge `jquery`, `classnames` and `humps` into `vendor.js`, do:
 ``` javascript
 new MergeIntoSingle({
