@@ -1,11 +1,14 @@
 
 const MergeIntoSingle = require('./index.js');
 
-var webpack = require('webpack');
-var path = require('path');
+const webpack = require('webpack');
+const path = require('path');
+
+const uglifyJS = require("uglify-js");
+const CleanCSS = require('clean-css');
 
 // Webpack Config
-var webpackConfig = {
+const webpackConfig = {
   entry: ['./example/main.js'],
   devtool: 'cheap-module-source-map',
   output: {
@@ -13,20 +16,24 @@ var webpackConfig = {
     path: './dist',
   },
   resolve: {
-    extensions: ['', '.js']
+    extensions: ['', '.js', '.css']
   },
   plugins: [
     new MergeIntoSingle({
       files:{
         'vendor.js':[
-          'node_modules/jquery/dist/jquery.js',
+          'node_modules/jquery/**/*.min.js',
           'node_modules/classnames/index.js',
           'node_modules/humps/humps.js'
+        ],
+        'style.css':[
+          'example/test.css'
         ]
       },
       transform:{
-        'vendor.js': code => require("uglify-js").minify(code).code
-      }
+        'vendor.js': code => uglifyJS.minify(code).code,
+        'style.css': code => new CleanCSS({}).minify(code).styles
+      },
     })
   ],
   module: {
