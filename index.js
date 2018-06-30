@@ -12,7 +12,11 @@ class MergeIntoFile {
 }
 
 const consequently = async (promises, separator) => promises
-    .reduce(async (acc, next) => `${await acc}${separator}${await next}`, '');
+    .reduce(async (acc, next) => {
+      const accText = await acc;
+      const nextText = await next;
+      return `${accText}${accText.length ? separator : ''}${nextText}`;
+    }, '');
 
 const parallely = (promises, separator) => Promise.all(promises)
     .then(results => results.join(separator));
