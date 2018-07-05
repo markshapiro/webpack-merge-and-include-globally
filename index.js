@@ -8,11 +8,11 @@ const listFiles = promisify(glob);
 const consequently = async (promises, separator) => {
   let result = '';
   for (const fileContentPromise of promises) {  // eslint-disable-line
-    const text = await fileContentPromise;  // eslint-disable-line
+    const content = await fileContentPromise;  // eslint-disable-line
     if (result !== '') {
       result += separator;
     }
-    result += text;
+    result += content;
   }
   return result;
 };
