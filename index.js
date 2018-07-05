@@ -5,12 +5,17 @@ const { promisify } = require('es6-promisify');
 const readFile = promisify(fs.readFile);
 const listFiles = promisify(glob);
 
-const consequently = async (promises, separator) => promises
-    .reduce(async (acc, next) => {
-      const accText = await acc;
-      const nextText = await next;
-      return `${accText}${accText.length ? separator : ''}${nextText}`;
-    }, '');
+const consequently = async (promises, separator) => {
+  let result = '';
+  for (const fileContentPromise of promises) {  // eslint-disable-line
+    const text = await fileContentPromise;  // eslint-disable-line
+    if (result !== '') {
+      result += separator;
+    }
+    result += text;
+  }
+  return result;
+};
 
 const parallely = (promises, separator) => Promise.all(promises)
     .then(results => results.join(separator));
