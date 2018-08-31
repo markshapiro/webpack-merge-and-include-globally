@@ -40,7 +40,9 @@ because your `node_modules` is not available in production.
                     'node_modules/moment/locale/cs.js',
                     'node_modules/moment/locale/de.js',
                     'node_modules/moment/locale/nl.js',
-                    'node_modules/toastr/build/toastr.min.js'
+                    'node_modules/toastr/build/toastr.min.js',
+                    // HTTP URLs are also supported:
+                    // 'http://code.jquery.com/jquery-3.3.1.min.js'
                 ],
                 "vendor.css": [
                     'node_modules/toastr/build/toastr.min.css'
