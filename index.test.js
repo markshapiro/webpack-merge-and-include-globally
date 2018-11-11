@@ -50,6 +50,36 @@ describe('MergeIntoFile', () => {
     });
   });
 
+  it('should succeed merging using mock content by using array instead of object', (done) => {
+    const instance = new MergeIntoSingle({
+      files: [
+        {
+          src: ['file1.js', 'file2.js'],
+          dest: val => ({
+            'script.js': `${val.toLowerCase()}`,
+          }),
+        },
+        {
+          src: ['*.css'],
+          dest: 'style.css',
+        },
+      ],
+    });
+    instance.apply({
+      plugin: (event, fun) => {
+        const obj = {
+          assets: {},
+        };
+        fun(obj, (err) => {
+          expect(err).toEqual(undefined);
+          expect(obj.assets['script.js'].source()).toEqual('file_1_text\nfile_2_text');
+          expect(obj.assets['style.css'].source()).toEqual('FILE_3_TEXT\nFILE_4_TEXT');
+          done();
+        });
+      },
+    });
+  });
+
   it('should succeed merging using mock content with ordered: true and transform', (done) => {
     const instance = new MergeIntoSingle({
       files: {

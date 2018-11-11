@@ -6,7 +6,7 @@ const readFile = promisify(fs.readFile);
 const listFiles = promisify(glob);
 
 const consequently = async (promises, separator) => promises
-  .reduce(async (acc, curr) => `${acc}${acc.length ? separator : ''}${await curr}`, '');
+  .reduce(async (acc, curr) => `${await acc}${(await acc).length ? separator : ''}${await curr}`, '');
 
 const parallely = (promises, separator) => Promise.all(promises)
     .then(results => results.join(separator));
@@ -48,7 +48,6 @@ class MergeIntoFile {
         });
       }
     });
-
     const finalPromises = filesCanonical.map(async (fileTrfm) => {
       const listOfLists = await Promise.all(fileTrfm.src.map(path => listFiles(path, null)));
       const flattenedList = Array.prototype.concat.apply([], listOfLists);
