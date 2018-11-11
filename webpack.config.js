@@ -1,5 +1,5 @@
 
-const MergeIntoSingle = require('./index.js');
+const MergeIntoSingle = require('./index.node6-compatible.js');
 
 const webpack = require('webpack');
 const path = require('path');
