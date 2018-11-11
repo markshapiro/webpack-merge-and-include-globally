@@ -5,17 +5,8 @@ const { promisify } = require('es6-promisify');
 const readFile = promisify(fs.readFile);
 const listFiles = promisify(glob);
 
-const consequently = async (promises, separator) => {
-  let result = '';
-  for (const fileContentPromise of promises) {  // eslint-disable-line
-    const content = await fileContentPromise;  // eslint-disable-line
-    if (result !== '') {
-      result += separator;
-    }
-    result += content;
-  }
-  return result;
-};
+const consequently = async (promises, separator) => promises
+  .reduce(async (acc, curr) => `${acc}${acc.length ? separator : ''}${await curr}`, '');
 
 const parallely = (promises, separator) => Promise.all(promises)
     .then(results => results.join(separator));
@@ -36,22 +27,44 @@ class MergeIntoFile {
 
   async run(compilation, callback) {
     const { files, transform, ordered, encoding } = this.options;
-    const finalPromises = Object.keys(files).map(async (newFile) => {
-      const listOfLists = await Promise.all(files[newFile].map(path => listFiles(path, null)));
+    let filesCanonical = [];
+    if (!Array.isArray(files)) {
+      Object.keys(files).forEach((newFile) => {
+        filesCanonical.push({
+          src: files[newFile],
+          dest: newFile,
+        });
+      });
+    } else {
+      filesCanonical = files;
+    }
+    filesCanonical.forEach((fileTrfm) => {
+      if (typeof fileTrfm.dest === 'string') {
+        const destFileName = fileTrfm.dest;
+        fileTrfm.dest = code => ({  // eslint-disable-line no-param-reassign
+          [destFileName]: (transform && transform[destFileName])
+            ? transform[destFileName](code)
+            : code,
+        });
+      }
+    });
+
+    const finalPromises = filesCanonical.map(async (fileTrfm) => {
+      const listOfLists = await Promise.all(fileTrfm.src.map(path => listFiles(path, null)));
       const flattenedList = Array.prototype.concat.apply([], listOfLists);
       const filesContentPromises = flattenedList.map(path => readFile(path, encoding || 'utf-8'));
-      let content = await (ordered ? consequently : parallely)(filesContentPromises, '\n');
-      if (transform && transform[newFile]) {
-        content = transform[newFile](content);
-      }
-      compilation.assets[newFile] = {   // eslint-disable-line no-param-reassign
-        source() {
-          return content;
-        },
-        size() {
-          return content.length;
-        },
-      };
+      const content = await (ordered ? consequently : parallely)(filesContentPromises, '\n');
+      const resultsFiles = await fileTrfm.dest(content);
+      Object.keys(resultsFiles).forEach((newFileName) => {
+        compilation.assets[newFileName] = {   // eslint-disable-line no-param-reassign
+          source() {
+            return resultsFiles[newFileName];
+          },
+          size() {
+            return resultsFiles[newFileName].length;
+          },
+        };
+      });
     });
 
     try {

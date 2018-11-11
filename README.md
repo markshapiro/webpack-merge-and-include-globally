@@ -11,7 +11,7 @@ npm install --save-dev webpack-merge-and-include-globally
 ### Usage
 
 Lets say you want to make libraries like `jquery`, `moment` (including 3 languages) and `toastr` available globally, and you're struggling to make them global with webpack or just importing them (in cases they aren't written well) because require() wraps the code into new scope and you want to execute it against a global scope, and you don't want to do this:
-``` html
+```html
   <script src="/node_modules/jquery/dist/jquery.min.js"></script>
   <script src="/node_modules/moment/moment.js"></script>
   <script src="/node_modules/moment/locale/cs.js"></script>
@@ -23,7 +23,7 @@ Lets say you want to make libraries like `jquery`, `moment` (including 3 languag
 ```
 because your `node_modules` is not available in production.
 <br/>with this plugin you can achieve the desired effect this way:
-``` javascript
+```javascript
 
   const MergeIntoSingleFilePlugin = require('webpack-merge-and-include-globally');
   
@@ -59,11 +59,11 @@ now `jQuery`, `moment` and `toastr` are available globally throughout your appli
 
 ### Options
 
-#### files
+#### files (as object)
 
 Object that maps file names to array of all files (can also be defined by wildcard path) that will be merged together and saved under each file name.
 <br/>For example to merge `jquery`, `classnames` and `humps` into `vendor.js`, do:
-``` javascript
+```javascript
 new MergeIntoSingle({
   files: {
     'vendor.js': [
@@ -82,12 +82,51 @@ new MergeIntoSingle({
 
 Object that maps resulting file names to tranform methods that will be applied on merged content before saving. Use to minify / uglify the result.
 <br/>For example to minify the final merge result of `vendor.js`, do:
-``` javascript
+```javascript
 new MergeIntoSingle({
   files: { 'vendor.js': [...] },
   transform: {
     'vendor.js': code => require("uglify-js").minify(code).code
   }
+})
+```
+
+#### files (as array)
+
+alternative way to specify files as array of `src` & `dest`, this way you can specify multiple file destinations for same source when you need to generate additional map file for example.
+<br/> `dest` should either be name of file or function that receives merged text and returns object of keys & values of each file and its content.
+```javascript
+new MergeIntoSingle({
+  files: [{
+    src:[
+      'node_modules/jquery/**/*.min.js',
+      'node_modules/classnames/index.js',
+      'node_modules/humps/humps.js'
+    ],
+    dest: code => {
+      const min = uglifyJS.minify(code, {sourceMap: {
+        filename: 'vendor.js',
+        url: 'vendor.js.map'
+      }});
+      return {
+        'vendor.js':min.code,
+        'vendor.js.map': min.map
+      }
+    },
+
+    // also possible:
+    //
+    // dest: 'vendor.js'
+  },{
+    src: ['example/test.css'],
+    dest: 'style.css'
+
+    // also possible:
+    //
+    // dest: code => ({
+    //   'style.css':new CleanCSS({}).minify(code).styles
+    // })
+  }]
 })
 ```
 

@@ -19,22 +19,49 @@ const webpackConfig = {
     extensions: ['', '.js', '.css']
   },
   plugins: [
+
     new MergeIntoSingle({
-      files:{
-        'vendor.js':[
+      files: [{
+        src:[
           'node_modules/jquery/**/*.min.js',
           'node_modules/classnames/index.js',
           'node_modules/humps/humps.js'
         ],
-        'style.css':[
-          'example/test.css'
-        ]
-      },
-      transform:{
-        'vendor.js': code => uglifyJS.minify(code).code,
-        'style.css': code => new CleanCSS({}).minify(code).styles
-      },
-    })
+        dest: code => {
+          const min = uglifyJS.minify(code, {sourceMap: {
+              filename: 'vendor.js',
+              url: 'vendor.js.map'
+            }});
+          return {
+            'vendor.js':min.code,
+            'vendor.js.map': min.map,
+          }
+        },
+      },{
+        src: ['example/test.css'],
+        dest: code => ({
+          'style.css':new CleanCSS({}).minify(code).styles,
+        })
+      }],
+    }),
+
+    //also possible:
+
+    // files:{
+    //   'vendor.js':[
+    //     'node_modules/jquery/**/*.min.js',
+    //     'node_modules/classnames/index.js',
+    //     'node_modules/humps/humps.js'
+    //   ],
+    //     'style.css':[
+    //     'example/test.css'
+    //   ]
+    // },
+    // transform:{
+    //   'vendor.js': code => uglifyJS.minify(code).code,
+    //   'style.css': code => new CleanCSS({}).minify(code).styles
+    // },
+
   ],
   module: {
     loaders: [
