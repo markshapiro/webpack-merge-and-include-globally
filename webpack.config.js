@@ -41,7 +41,7 @@ const webpackConfig = {
       },{
         src: ['example/test.css'],
         dest: code => ({
-          'style.min.css':new CleanCSS({}).minify(code).styles,
+          'style.css':new CleanCSS({}).minify(code).styles,
         })
       }],
 
