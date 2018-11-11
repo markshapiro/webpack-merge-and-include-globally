@@ -1,4 +1,6 @@
+
 const MergeIntoSingle = require('./index.node6-compatible.js');
+// const MergeIntoSingle = require('./index.js');
 
 jest.mock('fs');
 jest.mock('glob');

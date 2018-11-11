@@ -5,6 +5,7 @@ function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, a
 const fs = require('fs');
 const glob = require('glob');
 const { promisify } = require('es6-promisify');
+const revHash = require('rev-hash');
 
 const readFile = promisify(fs.readFile);
 const listFiles = promisify(glob);
@@ -43,11 +44,26 @@ class MergeIntoFile {
     }
   }
 
+  static getHashOfRelatedFile(assets, fileName) {
+    let hashPart = null;
+    Object.keys(assets).forEach(existingFileName => {
+      const match = existingFileName.match(/-([0-9a-f]+)(.min)?(\.\w+)(\.map)?$/);
+      const fileHashPart = match && match.length && match[1];
+      if (fileHashPart) {
+        const canonicalFileName = existingFileName.replace(`-${fileHashPart}`, '').replace(/\.map$/, '');
+        if (canonicalFileName === fileName.replace(/\.map$/, '')) {
+          hashPart = fileHashPart;
+        }
+      }
+    });
+    return hashPart;
+  }
+
   run(compilation, callback) {
     var _this = this;
 
     return _asyncToGenerator(function* () {
-      const { files, transform, ordered, encoding } = _this.options;
+      const { files, transform, ordered, encoding, hash } = _this.options;
       let filesCanonical = [];
       if (!Array.isArray(files)) {
         Object.keys(files).forEach(function (newFile) {
@@ -59,10 +75,10 @@ class MergeIntoFile {
       } else {
         filesCanonical = files;
       }
-      filesCanonical.forEach(function (fileTrfm) {
-        if (typeof fileTrfm.dest === 'string') {
-          const destFileName = fileTrfm.dest;
-          fileTrfm.dest = function (code) {
+      filesCanonical.forEach(function (fileTransform) {
+        if (typeof fileTransform.dest === 'string') {
+          const destFileName = fileTransform.dest;
+          fileTransform.dest = function (code) {
             return { // eslint-disable-line no-param-reassign
               [destFileName]: transform && transform[destFileName] ? transform[destFileName](code) : code
             };
@@ -70,8 +86,8 @@ class MergeIntoFile {
         }
       });
       const finalPromises = filesCanonical.map((() => {
-        var _ref3 = _asyncToGenerator(function* (fileTrfm) {
-          const listOfLists = yield Promise.all(fileTrfm.src.map(function (path) {
+        var _ref3 = _asyncToGenerator(function* (fileTransform) {
+          const listOfLists = yield Promise.all(fileTransform.src.map(function (path) {
             return listFiles(path, null);
           }));
           const flattenedList = Array.prototype.concat.apply([], listOfLists);
@@ -79,9 +95,16 @@ class MergeIntoFile {
             return readFile(path, encoding || 'utf-8');
           });
           const content = yield (ordered ? consequently : parallely)(filesContentPromises, '\n');
-          const resultsFiles = yield fileTrfm.dest(content);
+          const resultsFiles = yield fileTransform.dest(content);
           Object.keys(resultsFiles).forEach(function (newFileName) {
-            compilation.assets[newFileName] = { // eslint-disable-line no-param-reassign
+            let newFileNameHashed = newFileName;
+            if (hash) {
+              const hashPart = MergeIntoFile.getHashOfRelatedFile(compilation.assets, newFileName) || revHash(resultsFiles[newFileName]);
+              newFileNameHashed = newFileName.replace(/(.min)?\.\w+(\.map)?$/, function (suffix) {
+                return `-${hashPart}${suffix}`;
+              });
+            }
+            compilation.assets[newFileNameHashed] = { // eslint-disable-line no-param-reassign
               source() {
                 return resultsFiles[newFileName];
               },
