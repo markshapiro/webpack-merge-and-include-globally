@@ -9,7 +9,7 @@ const consequently = async (promises, separator) => promises
   .reduce(async (acc, curr) => `${await acc}${(await acc).length ? separator : ''}${await curr}`, '');
 
 const parallely = (promises, separator) => Promise.all(promises)
-    .then(results => results.join(separator));
+  .then(results => results.join(separator));
 
 class MergeIntoFile {
   constructor(options) {

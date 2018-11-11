@@ -93,8 +93,8 @@ new MergeIntoSingle({
 
 #### files (as array)
 
-alternative way to specify files as array of `src` & `dest`, this way you can specify multiple file destinations for same source when you need to generate additional map file for example.
-<br/> `dest` should either be name of file or function that receives merged text and returns object of keys & values of each file and its content.
+alternative way to specify files as array of `src` & `dest`, this way you get the flexibility to transform and create multiple destination files for same source when you need to generate additional map file for example.
+<br/> `dest` should either be name of file or function that receives merged text and returns object of keys & values for each file and its content.
 ```javascript
 new MergeIntoSingle({
   files: [{
