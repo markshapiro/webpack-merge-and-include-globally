@@ -56,5 +56,6 @@
     "url": "https://github.com/markshapiro/webpack-merge-and-include-globally/issues"
   },
   "homepage": "https://github.com/markshapiro/webpack-merge-and-include-globally#readme",
-  "licenses": []
+  "author": "Mark Shapiro",
+  "license": "MIT"
 }
