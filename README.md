@@ -137,7 +137,7 @@ set `true` to append version hash before file extension.
 #### ordered
 default: false
 
-if set `true` all files will be merged by their order in array, but makes build slower, good to use if you have dependencies that need to load sooner.
+if set `true` all files will be merged by their order in array, good to use if you have dependencies that need to load sooner.
 
 #### encoding
 
