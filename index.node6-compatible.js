@@ -10,7 +10,7 @@ const revHash = require('rev-hash');
 const readFile = promisify(fs.readFile);
 const listFiles = promisify(glob);
 
-const consequently = (() => {
+const joinContent = (() => {
   var _ref = _asyncToGenerator(function* (promises, separator) {
     return promises.reduce((() => {
       var _ref2 = _asyncToGenerator(function* (acc, curr) {
@@ -23,12 +23,10 @@ const consequently = (() => {
     })(), '');
   });
 
-  return function consequently(_x, _x2) {
+  return function joinContent(_x, _x2) {
     return _ref.apply(this, arguments);
   };
 })();
-
-const parallely = (promises, separator) => Promise.all(promises).then(results => results.join(separator));
 
 class MergeIntoFile {
   constructor(options) {
@@ -63,7 +61,7 @@ class MergeIntoFile {
     var _this = this;
 
     return _asyncToGenerator(function* () {
-      const { files, transform, ordered, encoding, hash } = _this.options;
+      const { files, transform, encoding, hash } = _this.options;
       let filesCanonical = [];
       if (!Array.isArray(files)) {
         Object.keys(files).forEach(function (newFile) {
@@ -94,7 +92,7 @@ class MergeIntoFile {
           const filesContentPromises = flattenedList.map(function (path) {
             return readFile(path, encoding || 'utf-8');
           });
-          const content = yield (ordered ? consequently : parallely)(filesContentPromises, '\n');
+          const content = yield joinContent(filesContentPromises, '\n');
           const resultsFiles = yield fileTransform.dest(content);
           Object.keys(resultsFiles).forEach(function (newFileName) {
             let newFileNameHashed = newFileName;

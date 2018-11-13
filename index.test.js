@@ -52,20 +52,20 @@ describe('MergeIntoFile', () => {
     });
   });
 
-  it('should succeed merging using mock content by using array instead of object', (done) => {
+  it('should succeed merging using mock content with transform', (done) => {
     const instance = new MergeIntoSingle({
-      files: [
-        {
-          src: ['file1.js', 'file2.js'],
-          dest: val => ({
-            'script.js': `${val.toLowerCase()}`,
-          }),
-        },
-        {
-          src: ['*.css'],
-          dest: 'style.css',
-        },
-      ],
+      files: {
+        'script.js': [
+          'file1.js',
+          'file2.js',
+        ],
+        'style.css': [
+          '*.css',
+        ],
+      },
+      transform: {
+        'script.js': val => `${val.toLowerCase()}`,
+      },
     });
     instance.apply({
       plugin: (event, fun) => {
@@ -82,21 +82,20 @@ describe('MergeIntoFile', () => {
     });
   });
 
-  it('should succeed merging using mock content with ordered: true and transform', (done) => {
+  it('should succeed merging using mock content by using array instead of object', (done) => {
     const instance = new MergeIntoSingle({
-      files: {
-        'script.js': [
-          'file1.js',
-          'file2.js',
-        ],
-        'style.css': [
-          '*.css',
-        ],
-      },
-      transform: {
-        'script.js': val => `${val.toLowerCase()}`,
-      },
-      ordered: true,
+      files: [
+        {
+          src: ['file1.js', 'file2.js'],
+          dest: val => ({
+            'script.js': `${val.toLowerCase()}`,
+          }),
+        },
+        {
+          src: ['*.css'],
+          dest: 'style.css',
+        },
+      ],
     });
     instance.apply({
       plugin: (event, fun) => {

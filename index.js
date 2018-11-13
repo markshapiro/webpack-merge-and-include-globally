@@ -6,11 +6,8 @@ const revHash = require('rev-hash');
 const readFile = promisify(fs.readFile);
 const listFiles = promisify(glob);
 
-const consequently = async (promises, separator) => promises
+const joinContent = async (promises, separator) => promises
   .reduce(async (acc, curr) => `${await acc}${(await acc).length ? separator : ''}${await curr}`, '');
-
-const parallely = (promises, separator) => Promise.all(promises)
-  .then(results => results.join(separator));
 
 class MergeIntoFile {
   constructor(options) {
@@ -42,7 +39,7 @@ class MergeIntoFile {
   }
 
   async run(compilation, callback) {
-    const { files, transform, ordered, encoding, hash } = this.options;
+    const { files, transform, encoding, hash } = this.options;
     let filesCanonical = [];
     if (!Array.isArray(files)) {
       Object.keys(files).forEach((newFile) => {
@@ -68,7 +65,7 @@ class MergeIntoFile {
       const listOfLists = await Promise.all(fileTransform.src.map(path => listFiles(path, null)));
       const flattenedList = Array.prototype.concat.apply([], listOfLists);
       const filesContentPromises = flattenedList.map(path => readFile(path, encoding || 'utf-8'));
-      const content = await (ordered ? consequently : parallely)(filesContentPromises, '\n');
+      const content = await joinContent(filesContentPromises, '\n');
       const resultsFiles = await fileTransform.dest(content);
       Object.keys(resultsFiles).forEach((newFileName) => {
         let newFileNameHashed = newFileName;
