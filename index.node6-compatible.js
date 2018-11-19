@@ -58,73 +58,62 @@ class MergeIntoFile {
   }
 
   run(compilation, callback) {
-    var _this = this;
-
-    return _asyncToGenerator(function* () {
-      const { files, transform, encoding, hash } = _this.options;
-      let filesCanonical = [];
-      if (!Array.isArray(files)) {
-        Object.keys(files).forEach(function (newFile) {
-          filesCanonical.push({
-            src: files[newFile],
-            dest: newFile
-          });
+    const { files, transform, encoding, hash } = this.options;
+    let filesCanonical = [];
+    if (!Array.isArray(files)) {
+      Object.keys(files).forEach(newFile => {
+        filesCanonical.push({
+          src: files[newFile],
+          dest: newFile
         });
-      } else {
-        filesCanonical = files;
-      }
-      filesCanonical.forEach(function (fileTransform) {
-        if (typeof fileTransform.dest === 'string') {
-          const destFileName = fileTransform.dest;
-          fileTransform.dest = function (code) {
-            return { // eslint-disable-line no-param-reassign
-              [destFileName]: transform && transform[destFileName] ? transform[destFileName](code) : code
-            };
-          };
-        }
       });
-      const finalPromises = filesCanonical.map((() => {
-        var _ref3 = _asyncToGenerator(function* (fileTransform) {
-          const listOfLists = yield Promise.all(fileTransform.src.map(function (path) {
-            return listFiles(path, null);
-          }));
-          const flattenedList = Array.prototype.concat.apply([], listOfLists);
-          const filesContentPromises = flattenedList.map(function (path) {
-            return readFile(path, encoding || 'utf-8');
-          });
-          const content = yield joinContent(filesContentPromises, '\n');
-          const resultsFiles = yield fileTransform.dest(content);
-          Object.keys(resultsFiles).forEach(function (newFileName) {
-            let newFileNameHashed = newFileName;
-            if (hash) {
-              const hashPart = MergeIntoFile.getHashOfRelatedFile(compilation.assets, newFileName) || revHash(resultsFiles[newFileName]);
-              newFileNameHashed = newFileName.replace(/(.min)?\.\w+(\.map)?$/, function (suffix) {
-                return `-${hashPart}${suffix}`;
-              });
-            }
-            compilation.assets[newFileNameHashed] = { // eslint-disable-line no-param-reassign
-              source() {
-                return resultsFiles[newFileName];
-              },
-              size() {
-                return resultsFiles[newFileName].length;
-              }
-            };
-          });
+    } else {
+      filesCanonical = files;
+    }
+    filesCanonical.forEach(fileTransform => {
+      if (typeof fileTransform.dest === 'string') {
+        const destFileName = fileTransform.dest;
+        fileTransform.dest = code => ({ // eslint-disable-line no-param-reassign
+          [destFileName]: transform && transform[destFileName] ? transform[destFileName](code) : code
         });
-
-        return function (_x5) {
-          return _ref3.apply(this, arguments);
-        };
-      })());
-
-      try {
-        yield Promise.all(finalPromises);
-        callback();
-      } catch (error) {
-        callback(error);
       }
-    })();
+    });
+    const finalPromises = filesCanonical.map((() => {
+      var _ref3 = _asyncToGenerator(function* (fileTransform) {
+        const listOfLists = yield Promise.all(fileTransform.src.map(function (path) {
+          return listFiles(path, null);
+        }));
+        const flattenedList = Array.prototype.concat.apply([], listOfLists);
+        const filesContentPromises = flattenedList.map(function (path) {
+          return readFile(path, encoding || 'utf-8');
+        });
+        const content = yield joinContent(filesContentPromises, '\n');
+        const resultsFiles = yield fileTransform.dest(content);
+        Object.keys(resultsFiles).forEach(function (newFileName) {
+          let newFileNameHashed = newFileName;
+          if (hash) {
+            const hashPart = MergeIntoFile.getHashOfRelatedFile(compilation.assets, newFileName) || revHash(resultsFiles[newFileName]);
+            newFileNameHashed = newFileName.replace(/(.min)?\.\w+(\.map)?$/, function (suffix) {
+              return `-${hashPart}${suffix}`;
+            });
+          }
+          compilation.assets[newFileNameHashed] = { // eslint-disable-line no-param-reassign
+            source() {
+              return resultsFiles[newFileName];
+            },
+            size() {
+              return resultsFiles[newFileName].length;
+            }
+          };
+        });
+      });
+
+      return function (_x5) {
+        return _ref3.apply(this, arguments);
+      };
+    })());
+
+    Promise.all(finalPromises).then(() => callback()).catch(error => callback(error));
   }
 }
 
