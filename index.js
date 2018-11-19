@@ -38,7 +38,7 @@ class MergeIntoFile {
     return hashPart;
   }
 
-  async run(compilation, callback) {
+  run(compilation, callback) {
     const { files, transform, encoding, hash } = this.options;
     let filesCanonical = [];
     if (!Array.isArray(files)) {
@@ -85,12 +85,9 @@ class MergeIntoFile {
       });
     });
 
-    try {
-      await Promise.all(finalPromises);
-      callback();
-    } catch (error) {
-      callback(error);
-    }
+    Promise.all(finalPromises)
+      .then(() => callback())
+      .catch(error => callback(error));
   }
 }
 
