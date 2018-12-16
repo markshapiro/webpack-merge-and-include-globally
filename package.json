@@ -32,10 +32,10 @@
     "npm": "^4.4.4",
     "raw-loader": "^0.5.1",
     "uglify-js": "^3.0.28",
-    "webpack": "^1.12.9",
     "webpack-dev-server": "^1.14.0"
   },
   "dependencies": {
+    "webpack": "^1.12.9",
     "es6-promisify": "^6.0.0",
     "glob": "^7.1.2",
     "rev-hash": "^2.0.0"

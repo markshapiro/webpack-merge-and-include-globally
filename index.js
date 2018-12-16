@@ -2,6 +2,7 @@ const fs = require('fs');
 const glob = require('glob');
 const { promisify } = require('es6-promisify');
 const revHash = require('rev-hash');
+const Chunk = require('webpack/lib/Chunk');
 
 const readFile = promisify(fs.readFile);
 const listFiles = promisify(glob);
@@ -73,6 +74,13 @@ class MergeIntoFile {
           const hashPart = MergeIntoFile.getHashOfRelatedFile(compilation.assets, newFileName)
             || revHash(resultsFiles[newFileName]);
           newFileNameHashed = newFileName.replace(/(.min)?\.\w+(\.map)?$/, suffix => `-${hashPart}${suffix}`);
+
+          const fileId = newFileName.replace(/\.map$/, '').replace(/\.\w+$/, '');
+          const chunk = new Chunk(fileId);
+          chunk.id = fileId;
+          chunk.ids = [chunk.id];
+          chunk.files.push(newFileNameHashed);
+          compilation.chunks.push(chunk);
         }
         compilation.assets[newFileNameHashed] = {   // eslint-disable-line no-param-reassign
           source() {
