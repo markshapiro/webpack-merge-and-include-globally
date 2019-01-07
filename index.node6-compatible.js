@@ -46,7 +46,7 @@ class MergeIntoFile {
   static getHashOfRelatedFile(assets, fileName) {
     let hashPart = null;
     Object.keys(assets).forEach(existingFileName => {
-      const match = existingFileName.match(/-([0-9a-f]+)(.min)?(\.\w+)(\.map)?$/);
+      const match = existingFileName.match(/-([0-9a-f]+)(\.min)?(\.\w+)(\.map)?$/);
       const fileHashPart = match && match.length && match[1];
       if (fileHashPart) {
         const canonicalFileName = existingFileName.replace(`-${fileHashPart}`, '').replace(/\.map$/, '');
