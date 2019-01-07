@@ -73,7 +73,7 @@ class MergeIntoFile {
         if (hash) {
           const hashPart = MergeIntoFile.getHashOfRelatedFile(compilation.assets, newFileName)
             || revHash(resultsFiles[newFileName]);
-          newFileNameHashed = newFileName.replace(/(.min)?\.\w+(\.map)?$/, suffix => `-${hashPart}${suffix}`);
+          newFileNameHashed = newFileName.replace(/(\.min)?\.\w+(\.map)?$/, suffix => `-${hashPart}${suffix}`);
 
           const fileId = newFileName.replace(/\.map$/, '').replace(/\.\w+$/, '');
           const chunk = new Chunk(fileId);

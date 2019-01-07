@@ -94,7 +94,7 @@ class MergeIntoFile {
           let newFileNameHashed = newFileName;
           if (hash) {
             const hashPart = MergeIntoFile.getHashOfRelatedFile(compilation.assets, newFileName) || revHash(resultsFiles[newFileName]);
-            newFileNameHashed = newFileName.replace(/(.min)?\.\w+(\.map)?$/, function (suffix) {
+            newFileNameHashed = newFileName.replace(/(\.min)?\.\w+(\.map)?$/, function (suffix) {
               return `-${hashPart}${suffix}`;
             });
 
