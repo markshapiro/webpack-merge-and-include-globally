@@ -134,7 +134,7 @@ default: false
 
 set `true` to append version hash before file extension.
 
-you can get names of generated file names with hash by passing callback function as second argument to plugin: 
+you can get names of generated files mapped to original by passing callback function as second argument to plugin: 
 ```
 new MergeIntoSingle({ ... }, filesMap => { ... }),
 ```
