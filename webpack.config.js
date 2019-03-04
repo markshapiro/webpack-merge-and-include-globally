@@ -62,6 +62,10 @@ const webpackConfig = {
       //   'vendor.js': code => uglifyJS.minify(code).code,
       //   'style.css': code => new CleanCSS({}).minify(code).styles,
       // },
+
+      hash:true,
+    }, filesMap =>{
+      console.log("generated files: ",filesMap)
     }),
   ],
   module: {

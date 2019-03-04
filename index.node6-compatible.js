@@ -30,8 +30,9 @@ const joinContent = (() => {
 })();
 
 class MergeIntoFile {
-  constructor(options) {
+  constructor(options, onComplete) {
     this.options = options;
+    this.onComplete = onComplete;
   }
 
   apply(compiler) {
@@ -60,6 +61,7 @@ class MergeIntoFile {
 
   run(compilation, callback) {
     const { files, transform, encoding, hash } = this.options;
+    const generatedFiles = {};
     let filesCanonical = [];
     if (!Array.isArray(files)) {
       Object.keys(files).forEach(newFile => {
@@ -105,6 +107,7 @@ class MergeIntoFile {
             chunk.files.push(newFileNameHashed);
             compilation.chunks.push(chunk);
           }
+          generatedFiles[newFileName] = newFileNameHashed;
           compilation.assets[newFileNameHashed] = { // eslint-disable-line no-param-reassign
             source() {
               return resultsFiles[newFileName];
@@ -121,7 +124,12 @@ class MergeIntoFile {
       };
     })());
 
-    Promise.all(finalPromises).then(() => callback()).catch(error => callback(error));
+    Promise.all(finalPromises).then(() => {
+      if (this.onComplete) {
+        this.onComplete(generatedFiles);
+      }
+      callback();
+    }).catch(error => callback(error));
   }
 }
 

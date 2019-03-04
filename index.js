@@ -11,8 +11,9 @@ const joinContent = async (promises, separator) => promises
   .reduce(async (acc, curr) => `${await acc}${(await acc).length ? separator : ''}${await curr}`, '');
 
 class MergeIntoFile {
-  constructor(options) {
+  constructor(options, onComplete) {
     this.options = options;
+    this.onComplete = onComplete;
   }
 
   apply(compiler) {
@@ -41,6 +42,7 @@ class MergeIntoFile {
 
   run(compilation, callback) {
     const { files, transform, encoding, hash } = this.options;
+    const generatedFiles = {};
     let filesCanonical = [];
     if (!Array.isArray(files)) {
       Object.keys(files).forEach((newFile) => {
@@ -82,6 +84,7 @@ class MergeIntoFile {
           chunk.files.push(newFileNameHashed);
           compilation.chunks.push(chunk);
         }
+        generatedFiles[newFileName] = newFileNameHashed
         compilation.assets[newFileNameHashed] = {   // eslint-disable-line no-param-reassign
           source() {
             return resultsFiles[newFileName];
@@ -94,7 +97,12 @@ class MergeIntoFile {
     });
 
     Promise.all(finalPromises)
-      .then(() => callback())
+      .then(() => {
+        if(this.onComplete){
+          this.onComplete(generatedFiles)
+        }
+        callback()
+      })
       .catch(error => callback(error));
   }
 }
