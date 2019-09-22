@@ -63,7 +63,7 @@ const webpackConfig = {
       //   'style.css': code => new CleanCSS({}).minify(code).styles,
       // },
 
-      hash:true,
+      hash: false,
     }, filesMap =>{
       console.log("generated files: ",filesMap)
     }),

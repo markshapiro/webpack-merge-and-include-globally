@@ -2,7 +2,6 @@ const fs = require('fs');
 const glob = require('glob');
 const { promisify } = require('es6-promisify');
 const revHash = require('rev-hash');
-const Chunk = require('webpack/lib/Chunk');
 
 const readFile = promisify(fs.readFile);
 const listFiles = promisify(glob);
@@ -83,7 +82,7 @@ class MergeIntoFile {
           chunk.ids = [chunk.id];
           chunk.files.push(newFileNameHashed);
         }
-        generatedFiles[newFileName] = newFileNameHashed
+        generatedFiles[newFileName] = newFileNameHashed;
         compilation.assets[newFileNameHashed] = {   // eslint-disable-line no-param-reassign
           source() {
             return resultsFiles[newFileName];
@@ -97,10 +96,10 @@ class MergeIntoFile {
 
     Promise.all(finalPromises)
       .then(() => {
-        if(this.onComplete){
-          this.onComplete(generatedFiles)
+        if (this.onComplete) {
+          this.onComplete(generatedFiles);
         }
-        callback()
+        callback();
       })
       .catch(error => callback(error));
   }

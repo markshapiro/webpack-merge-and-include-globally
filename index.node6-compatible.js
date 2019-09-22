@@ -6,7 +6,6 @@ const fs = require('fs');
 const glob = require('glob');
 const { promisify } = require('es6-promisify');
 const revHash = require('rev-hash');
-const Chunk = require('webpack/lib/Chunk');
 
 const readFile = promisify(fs.readFile);
 const listFiles = promisify(glob);
