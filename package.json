@@ -1,6 +1,6 @@
 {
   "name": "webpack-merge-and-include-globally",
-  "version": "2.1.18",
+  "version": "2.1.19",
   "description": "Merge multiple files (js,css..) into single file to include somewhere",
   "main": "index.node6-compatible.js",
   "scripts": {
