@@ -101,11 +101,10 @@ class MergeIntoFile {
             });
 
             const fileId = newFileName.replace(/\.map$/, '').replace(/\.\w+$/, '');
-            const chunk = new Chunk(fileId);
+            const chunk = compilation.addChunk(fileId);
             chunk.id = fileId;
             chunk.ids = [chunk.id];
             chunk.files.push(newFileNameHashed);
-            compilation.chunks.push(chunk);
           }
           generatedFiles[newFileName] = newFileNameHashed;
           compilation.assets[newFileNameHashed] = { // eslint-disable-line no-param-reassign
