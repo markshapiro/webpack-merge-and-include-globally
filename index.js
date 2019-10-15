@@ -2,12 +2,52 @@ const fs = require('fs');
 const glob = require('glob');
 const { promisify } = require('es6-promisify');
 const revHash = require('rev-hash');
+const { SourceMapGenerator } = require('source-map');
+const path = require('path');
 
 const readFile = promisify(fs.readFile);
 const listFiles = promisify(glob);
 
-const joinContent = async (promises, separator) => promises
-  .reduce(async (acc, curr) => `${await acc}${(await acc).length ? separator : ''}${await curr}`, '');
+const getLineNumber = function (str, start, stop) {
+  const i1 = (start === undefined || start < 0) ? 0 : start;
+  const i2 = (stop === undefined || stop >= str.length) ? str.length - 1 : stop;
+  let ret = 1;
+  for (let i = i1; i <= i2; i++) if (str.charAt(i) === '\n') ret++;
+  return ret;
+};
+
+const joinContentWithMap = async (promises, separator, sourceRoot, inlineSources) => promises.reduce(async (acc, curr) => {
+  const lines = getLineNumber(await curr.content);
+  const relativePath = sourceRoot ? path.relative(sourceRoot, curr.path) : curr.path;
+
+  if (inlineSources) {
+    (await acc).map.setSourceContent(relativePath, await curr.content);
+  }
+
+  for (let offset = 0; offset < lines; offset++) {
+    (await acc).map.addMapping({
+      source: relativePath,
+      original: { line: 1 + offset, column: 0 },
+      generated: { line: (await acc).lines + offset, column: 0 },
+    });
+  }
+
+  return {
+    code: `${(await acc).code}${(await acc).code.length ? separator : ''}${await curr.content}`,
+    lines: (await acc).lines + lines,
+    map: (await acc).map,
+  };
+}, {
+  code: '',
+  lines: 1,
+  map: new SourceMapGenerator(),
+});
+
+const joinContent = async (promises, separator) => promises.reduce(async (acc, curr) => ({
+  code: `${(await acc).code}${(await acc).code.length ? separator : ''}${await curr.content}`,
+}), {
+  code: '',
+});
 
 class MergeIntoFile {
   constructor(options, onComplete) {
@@ -40,7 +80,7 @@ class MergeIntoFile {
   }
 
   run(compilation, callback) {
-    const { files, transform, encoding, hash } = this.options;
+    const { files, transform, encoding, hash, sourceMap } = this.options;
     const generatedFiles = {};
     let filesCanonical = [];
     if (!Array.isArray(files)) {
@@ -56,19 +96,22 @@ class MergeIntoFile {
     filesCanonical.forEach((fileTransform) => {
       if (typeof fileTransform.dest === 'string') {
         const destFileName = fileTransform.dest;
-        fileTransform.dest = code => ({  // eslint-disable-line no-param-reassign
+        fileTransform.dest = (code, map) => ({  // eslint-disable-line no-param-reassign
           [destFileName]: (transform && transform[destFileName])
-            ? transform[destFileName](code)
+            ? transform[destFileName](code, map)
             : code,
         });
       }
     });
+    const sourceMapEnabled = !!sourceMap;
+    const sourceMapRoot = sourceMap && sourceMap.sourceRoot;
+    const sourceMapInlineSources = sourceMap && sourceMap.inlineSources;
     const finalPromises = filesCanonical.map(async (fileTransform) => {
       const listOfLists = await Promise.all(fileTransform.src.map(path => listFiles(path, null)));
       const flattenedList = Array.prototype.concat.apply([], listOfLists);
-      const filesContentPromises = flattenedList.map(path => readFile(path, encoding || 'utf-8'));
-      const content = await joinContent(filesContentPromises, '\n');
-      const resultsFiles = await fileTransform.dest(content);
+      const filesContentPromises = flattenedList.map(path => ({ path, content: readFile(path, 'utf-8') }));
+      const content = sourceMapEnabled ? await joinContentWithMap(filesContentPromises, '\n', sourceMapRoot, sourceMapInlineSources) : await joinContent(filesContentPromises, '\n');
+      const resultsFiles = await fileTransform.dest(content.code, content.map);
       Object.keys(resultsFiles).forEach((newFileName) => {
         let newFileNameHashed = newFileName;
         if (hash) {

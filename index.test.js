@@ -82,6 +82,37 @@ describe('MergeIntoFile', () => {
     });
   });
 
+  it('should succeed merging using mock content with transform and map', (done) => {
+    const instance = new MergeIntoSingle({
+      files: {
+        'script.js.map': [
+          'file1.js',
+          'file2.js',
+        ],
+        'style.css': [
+          '*.css',
+        ],
+      },
+      transform: {
+        'script.js.map': (val, map) => `${map.toString()}`,
+      },
+      sourceMap: true,
+    });
+    instance.apply({
+      plugin: (event, fun) => {
+        const obj = {
+          assets: {},
+        };
+        fun(obj, (err) => {
+          expect(err).toEqual(undefined);
+          expect(obj.assets['script.js.map'].source()).toEqual('{"version":3,"sources":["1.js","2.js"],"names":[],"mappings":"AAAA;ACAA"}');
+          expect(obj.assets['style.css'].source()).toEqual('FILE_3_TEXT\nFILE_4_TEXT');
+          done();
+        });
+      },
+    });
+  });
+
   it('should succeed merging using mock content by using array instead of object', (done) => {
     const instance = new MergeIntoSingle({
       files: [

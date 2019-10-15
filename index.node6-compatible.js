@@ -6,25 +6,80 @@ const fs = require('fs');
 const glob = require('glob');
 const { promisify } = require('es6-promisify');
 const revHash = require('rev-hash');
+const { SourceMapGenerator } = require('source-map');
+const path = require('path');
 
 const readFile = promisify(fs.readFile);
 const listFiles = promisify(glob);
 
-const joinContent = (() => {
-  var _ref = _asyncToGenerator(function* (promises, separator) {
+const getLineNumber = function (str, start, stop) {
+  const i1 = start === undefined || start < 0 ? 0 : start;
+  const i2 = stop === undefined || stop >= str.length ? str.length - 1 : stop;
+  let ret = 1;
+  for (let i = i1; i <= i2; i++) if (str.charAt(i) === '\n') ret++;
+  return ret;
+};
+
+const joinContentWithMap = (() => {
+  var _ref = _asyncToGenerator(function* (promises, separator, sourceRoot, inlineSources) {
     return promises.reduce((() => {
       var _ref2 = _asyncToGenerator(function* (acc, curr) {
-        return `${yield acc}${(yield acc).length ? separator : ''}${yield curr}`;
+        const lines = getLineNumber((yield curr.content));
+        const relativePath = sourceRoot ? path.relative(sourceRoot, curr.path) : curr.path;
+
+        if (inlineSources) {
+          (yield acc).map.setSourceContent(relativePath, (yield curr.content));
+        }
+
+        for (let offset = 0; offset < lines; offset++) {
+          (yield acc).map.addMapping({
+            source: relativePath,
+            original: { line: 1 + offset, column: 0 },
+            generated: { line: (yield acc).lines + offset, column: 0 }
+          });
+        }
+
+        return {
+          code: `${(yield acc).code}${(yield acc).code.length ? separator : ''}${yield curr.content}`,
+          lines: (yield acc).lines + lines,
+          map: (yield acc).map
+        };
       });
 
-      return function (_x3, _x4) {
+      return function (_x5, _x6) {
         return _ref2.apply(this, arguments);
       };
-    })(), '');
+    })(), {
+      code: '',
+      lines: 1,
+      map: new SourceMapGenerator()
+    });
   });
 
-  return function joinContent(_x, _x2) {
+  return function joinContentWithMap(_x, _x2, _x3, _x4) {
     return _ref.apply(this, arguments);
+  };
+})();
+
+const joinContent = (() => {
+  var _ref3 = _asyncToGenerator(function* (promises, separator) {
+    return promises.reduce((() => {
+      var _ref4 = _asyncToGenerator(function* (acc, curr) {
+        return {
+          code: `${(yield acc).code}${(yield acc).code.length ? separator : ''}${yield curr.content}`
+        };
+      });
+
+      return function (_x9, _x10) {
+        return _ref4.apply(this, arguments);
+      };
+    })(), {
+      code: ''
+    });
+  });
+
+  return function joinContent(_x7, _x8) {
+    return _ref3.apply(this, arguments);
   };
 })();
 
@@ -59,7 +114,7 @@ class MergeIntoFile {
   }
 
   run(compilation, callback) {
-    const { files, transform, encoding, hash } = this.options;
+    const { files, transform, encoding, hash, sourceMap } = this.options;
     const generatedFiles = {};
     let filesCanonical = [];
     if (!Array.isArray(files)) {
@@ -75,22 +130,25 @@ class MergeIntoFile {
     filesCanonical.forEach(fileTransform => {
       if (typeof fileTransform.dest === 'string') {
         const destFileName = fileTransform.dest;
-        fileTransform.dest = code => ({ // eslint-disable-line no-param-reassign
-          [destFileName]: transform && transform[destFileName] ? transform[destFileName](code) : code
+        fileTransform.dest = (code, map) => ({ // eslint-disable-line no-param-reassign
+          [destFileName]: transform && transform[destFileName] ? transform[destFileName](code, map) : code
         });
       }
     });
+    const sourceMapEnabled = !!sourceMap;
+    const sourceMapRoot = sourceMap && sourceMap.sourceRoot;
+    const sourceMapInlineSources = sourceMap && sourceMap.inlineSources;
     const finalPromises = filesCanonical.map((() => {
-      var _ref3 = _asyncToGenerator(function* (fileTransform) {
+      var _ref5 = _asyncToGenerator(function* (fileTransform) {
         const listOfLists = yield Promise.all(fileTransform.src.map(function (path) {
           return listFiles(path, null);
         }));
         const flattenedList = Array.prototype.concat.apply([], listOfLists);
         const filesContentPromises = flattenedList.map(function (path) {
-          return readFile(path, encoding || 'utf-8');
+          return { path, content: readFile(path, 'utf-8') };
         });
-        const content = yield joinContent(filesContentPromises, '\n');
-        const resultsFiles = yield fileTransform.dest(content);
+        const content = sourceMapEnabled ? yield joinContentWithMap(filesContentPromises, '\n', sourceMapRoot, sourceMapInlineSources) : yield joinContent(filesContentPromises, '\n');
+        const resultsFiles = yield fileTransform.dest(content.code, content.map);
         Object.keys(resultsFiles).forEach(function (newFileName) {
           let newFileNameHashed = newFileName;
           if (hash) {
@@ -117,8 +175,8 @@ class MergeIntoFile {
         });
       });
 
-      return function (_x5) {
-        return _ref3.apply(this, arguments);
+      return function (_x11) {
+        return _ref5.apply(this, arguments);
       };
     })());
 
