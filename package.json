@@ -41,8 +41,7 @@
   "dependencies": {
     "es6-promisify": "^6.0.0",
     "glob": "^7.1.2",
-    "rev-hash": "^2.0.0",
-    "webpack-cli": "^3.3.10"
+    "rev-hash": "^2.0.0"
   },
   "keywords": [
     "webpack",
