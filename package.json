@@ -21,7 +21,7 @@
     "babel-preset-eslatest-node6": "^1.0.1",
     "classnames": "^2.2.5",
     "clean-css": "^4.1.11",
-    "eslint": "^3.14.1",
+    "eslint": "^4.18.2",
     "eslint-config-airbnb-base": "^11.0.1",
     "eslint-plugin-import": "^2.2.0",
     "eslint-plugin-jest": "^21.0.2",
