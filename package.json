@@ -33,7 +33,7 @@
     "raw-loader": "^0.5.1",
     "uglify-js": "^3.0.28",
     "webpack": "^1.12.9",
-    "webpack-dev-server": "^3.1.11"
+    "webpack-dev-server": "^1.14.0"
   },
   "peerDependencies": {
     "webpack": ">= 1.0.0"
@@ -41,7 +41,8 @@
   "dependencies": {
     "es6-promisify": "^6.0.0",
     "glob": "^7.1.2",
-    "rev-hash": "^2.0.0"
+    "rev-hash": "^2.0.0",
+    "webpack-cli": "^3.3.10"
   },
   "keywords": [
     "webpack",
