@@ -61,7 +61,8 @@ class MergeIntoFile {
   run(compilation, callback) {
     const { files, transform, encoding, hash, chunks } = this.options;
     if (chunks && compilation.chunks && compilation.chunks.filter(chunk => chunks.indexOf(chunk.name) >= 0 && chunk.rendered).length === 0) {
-      return callback();
+      callback();
+      return;
     }
     const generatedFiles = {};
     let filesCanonical = [];

@@ -41,9 +41,10 @@ class MergeIntoFile {
 
   run(compilation, callback) {
     const { files, transform, encoding, hash, chunks } = this.options;
-    if(chunks && compilation.chunks && compilation.chunks
-        .filter(chunk => chunks.indexOf(chunk.name) >= 0 && chunk.rendered).length===0) {
-      return callback();
+    if (chunks && compilation.chunks && compilation.chunks
+      .filter(chunk => chunks.indexOf(chunk.name) >= 0 && chunk.rendered).length === 0) {
+      callback();
+      return;
     }
     const generatedFiles = {};
     let filesCanonical = [];
@@ -60,7 +61,7 @@ class MergeIntoFile {
     filesCanonical.forEach((fileTransform) => {
       if (typeof fileTransform.dest === 'string') {
         const destFileName = fileTransform.dest;
-        fileTransform.dest = code => ({  // eslint-disable-line no-param-reassign
+        fileTransform.dest = code => ({ // eslint-disable-line no-param-reassign
           [destFileName]: (transform && transform[destFileName])
             ? transform[destFileName](code)
             : code,
@@ -87,7 +88,7 @@ class MergeIntoFile {
           chunk.files.push(newFileNameHashed);
         }
         generatedFiles[newFileName] = newFileNameHashed;
-        compilation.assets[newFileNameHashed] = {   // eslint-disable-line no-param-reassign
+        compilation.assets[newFileNameHashed] = { // eslint-disable-line no-param-reassign
           source() {
             return resultsFiles[newFileName];
           },
