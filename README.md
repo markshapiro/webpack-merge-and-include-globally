@@ -145,6 +145,12 @@ default: 'utf-8'
 
 encoding of node.js reading
 
+#### chunks
+
+default: undefined
+
+array of entry points (strings) for which this plugin should run only
+
 ### Working Example
 
 working example already included in project.
