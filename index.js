@@ -40,7 +40,14 @@ class MergeIntoFile {
   }
 
   run(compilation, callback) {
-    const { files, transform, encoding, hash, chunks } = this.options;
+    const {
+      files,
+      transform,
+      encoding,
+      chunks,
+      hash,
+      transformFileName,
+    } = this.options;
     if (chunks && compilation.chunks && compilation.chunks
       .filter(chunk => chunks.indexOf(chunk.name) >= 0 && chunk.rendered).length === 0) {
       callback();
@@ -76,16 +83,30 @@ class MergeIntoFile {
       const resultsFiles = await fileTransform.dest(content);
       Object.keys(resultsFiles).forEach((newFileName) => {
         let newFileNameHashed = newFileName;
-        if (hash) {
+        const hasTransformFileNameFn = typeof transformFileName === 'function';
+
+        if (hash || hasTransformFileNameFn) {
           const hashPart = MergeIntoFile.getHashOfRelatedFile(compilation.assets, newFileName)
-            || revHash(resultsFiles[newFileName]);
-          newFileNameHashed = newFileName.replace(/(\.min)?\.\w+(\.map)?$/, suffix => `-${hashPart}${suffix}`);
+          || revHash(resultsFiles[newFileName]);
+
+          if (hasTransformFileNameFn) {
+            const extensionPattern = /\.[^.]*$/g;
+            const fileNameBase = newFileName.replace(extensionPattern, '');
+            const [extension] = newFileName.match(extensionPattern);
+
+            newFileNameHashed = transformFileName(fileNameBase, extension, hashPart);
+          } else {
+            newFileNameHashed = newFileName.replace(/(\.min)?\.\w+(\.map)?$/, suffix => `-${hashPart}${suffix}`);
+          }
 
           const fileId = newFileName.replace(/\.map$/, '').replace(/\.\w+$/, '');
-          const chunk = compilation.addChunk(fileId);
-          chunk.id = fileId;
-          chunk.ids = [chunk.id];
-          chunk.files.push(newFileNameHashed);
+
+          if (typeof compilation.addChunk === 'function') {
+            const chunk = compilation.addChunk(fileId);
+            chunk.id = fileId;
+            chunk.ids = [chunk.id];
+            chunk.files.push(newFileNameHashed);
+          }
         }
         generatedFiles[newFileName] = newFileNameHashed;
         compilation.assets[newFileNameHashed] = { // eslint-disable-line no-param-reassign

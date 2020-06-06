@@ -111,4 +111,37 @@ describe('MergeIntoFile', () => {
       },
     });
   });
+
+  it('should succeed merging using transform file name function', (done) => {
+    const mockHash = 'xyz';
+    const instance = new MergeIntoSingle({
+      files: {
+        'script.js': [
+          'file1.js',
+          'file2.js',
+        ],
+        'other.deps.js': [
+          'file1.js',
+        ],
+        'style.css': [
+          '*.css',
+        ],
+      },
+      transformFileName: (fileNameBase, extension) => `${fileNameBase}${extension}?hash=${mockHash}`,
+    });
+    instance.apply({
+      plugin: (event, fun) => {
+        const obj = {
+          assets: {},
+        };
+        fun(obj, (err) => {
+          expect(err).toEqual(undefined);
+          expect(obj.assets[`script.js?hash=${mockHash}`]).toBeDefined();
+          expect(obj.assets[`other.deps.js?hash=${mockHash}`]).toBeDefined();
+          expect(obj.assets[`style.css?hash=${mockHash}`]).toBeDefined();
+          done();
+        });
+      },
+    });
+  });
 });
