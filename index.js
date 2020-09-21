@@ -81,6 +81,11 @@ class MergeIntoFile {
       const filesContentPromises = flattenedList.map(path => readFile(path, encoding || 'utf-8'));
       const content = await joinContent(filesContentPromises, '\n');
       const resultsFiles = await fileTransform.dest(content);
+      for (const resultsFile in resultsFiles) {
+        if (typeof resultsFiles[resultsFile] === 'object') {
+          resultsFiles[resultsFile] = await resultsFiles[resultsFile];
+        }
+      }
       Object.keys(resultsFiles).forEach((newFileName) => {
         let newFileNameHashed = newFileName;
         const hasTransformFileNameFn = typeof transformFileName === 'function';
