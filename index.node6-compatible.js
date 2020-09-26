@@ -102,6 +102,11 @@ class MergeIntoFile {
         });
         const content = yield joinContent(filesContentPromises, '\n');
         const resultsFiles = yield fileTransform.dest(content);
+        for (const resultsFile in resultsFiles) {
+          if (typeof resultsFiles[resultsFile] === 'object') {
+            resultsFiles[resultsFile] = yield resultsFiles[resultsFile];
+          }
+        }
         Object.keys(resultsFiles).forEach(function (newFileName) {
           let newFileNameHashed = newFileName;
           const hasTransformFileNameFn = typeof transformFileName === 'function';
