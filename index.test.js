@@ -52,6 +52,30 @@ describe('MergeIntoFile', () => {
     });
   });
 
+  it('should succeed merging using mock content with a custom separator', (done) => {
+    const instance = new MergeIntoSingle({
+      separator: '\n;\n',
+      files: {
+        'script.js': [
+          'file1.js',
+          'file2.js',
+        ]
+      },
+    });
+    instance.apply({
+      plugin: (event, fun) => {
+        const obj = {
+          assets: {},
+        };
+        fun(obj, (err) => {
+          expect(err).toEqual(undefined);
+          expect(obj.assets['script.js'].source()).toEqual('FILE_1_TEXT\n;\nFILE_2_TEXT');
+          done();
+        });
+      },
+    });
+  });
+
   it('should succeed merging using mock content with transform', (done) => {
     const instance = new MergeIntoSingle({
       files: {
