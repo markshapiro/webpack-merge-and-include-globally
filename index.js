@@ -76,10 +76,11 @@ class MergeIntoFile {
       }
     });
     const finalPromises = filesCanonical.map(async (fileTransform) => {
+      const { separator = '\n'} = this.options;
       const listOfLists = await Promise.all(fileTransform.src.map(path => listFiles(path, null)));
       const flattenedList = Array.prototype.concat.apply([], listOfLists);
       const filesContentPromises = flattenedList.map(path => readFile(path, encoding || 'utf-8'));
-      const content = await joinContent(filesContentPromises, '\n');
+      const content = await joinContent(filesContentPromises, separator);
       const resultsFiles = await fileTransform.dest(content);
       for (const resultsFile in resultsFiles) {
         if (typeof resultsFiles[resultsFile] === 'object') {
