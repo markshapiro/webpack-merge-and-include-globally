@@ -69,6 +69,8 @@ class MergeIntoFile {
   }
 
   run(compilation, callback) {
+    var _this = this;
+
     const {
       files,
       transform,
@@ -105,6 +107,7 @@ class MergeIntoFile {
     });
     const finalPromises = filesCanonical.map((() => {
       var _ref3 = _asyncToGenerator(function* (fileTransform) {
+        const { separator = '\n' } = _this.options;
         const listOfLists = yield Promise.all(fileTransform.src.map(function (path) {
           return listFiles(path, null);
         }));
@@ -112,7 +115,7 @@ class MergeIntoFile {
         const filesContentPromises = flattenedList.map(function (path) {
           return readFile(path, encoding || 'utf-8');
         });
-        const content = yield joinContent(filesContentPromises, '\n');
+        const content = yield joinContent(filesContentPromises, separator);
         const resultsFiles = yield fileTransform.dest(content);
         for (const resultsFile in resultsFiles) {
           if (typeof resultsFiles[resultsFile] === 'object') {
