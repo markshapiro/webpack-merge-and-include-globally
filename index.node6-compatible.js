@@ -151,7 +151,15 @@ class MergeIntoFile {
             }
           }
           generatedFiles[newFileName] = newFileNameHashed;
-          if (webpackMajorVersion < 5) {
+          if (compilation.hooks) {
+            const { sources, Compilation } = require('webpack');
+            compilation.hooks.processAssets.tap({
+              name: plugin.name,
+              stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL
+            }, function () {
+              compilation.emitAsset(newFileNameHashed, new sources.RawSource(resultsFiles[newFileName]));
+            });
+          } else {
             compilation.assets[newFileNameHashed] = { // eslint-disable-line no-param-reassign
               source() {
                 return resultsFiles[newFileName];
@@ -160,14 +168,6 @@ class MergeIntoFile {
                 return resultsFiles[newFileName].length;
               }
             };
-          } else {
-            const { sources, Compilation } = require('webpack');
-            compilation.hooks.processAssets.tap({
-              name: plugin.name,
-              stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL
-            }, function () {
-              compilation.emitAsset(newFileNameHashed, new sources.RawSource(resultsFiles[newFileName]));
-            });
           }
         });
       });

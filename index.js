@@ -127,16 +127,7 @@ class MergeIntoFile {
           }
         }
         generatedFiles[newFileName] = newFileNameHashed;
-        if (webpackMajorVersion < 5) {
-          compilation.assets[newFileNameHashed] = { // eslint-disable-line no-param-reassign
-            source() {
-              return resultsFiles[newFileName];
-            },
-            size() {
-              return resultsFiles[newFileName].length;
-            },
-          };
-        } else {
+        if (compilation.hooks) {
           const { sources, Compilation } = require('webpack');
           compilation.hooks.processAssets.tap(
             {
@@ -147,6 +138,15 @@ class MergeIntoFile {
               compilation.emitAsset(newFileNameHashed, new sources.RawSource(resultsFiles[newFileName]))
             }
           );
+        } else {
+          compilation.assets[newFileNameHashed] = { // eslint-disable-line no-param-reassign
+            source() {
+              return resultsFiles[newFileName];
+            },
+            size() {
+              return resultsFiles[newFileName].length;
+            },
+          };
         }
       });
     });
