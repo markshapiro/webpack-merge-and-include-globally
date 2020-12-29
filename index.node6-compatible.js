@@ -7,6 +7,10 @@ const glob = require('glob');
 const { promisify } = require('es6-promisify');
 const revHash = require('rev-hash');
 
+const plugin = { name: 'MergeIntoFile' };
+
+const webpackMajorVersion = Number(require('webpack/package.json').version.split('.')[0]);
+
 const readFile = promisify(fs.readFile);
 const listFiles = promisify(glob);
 
@@ -36,8 +40,14 @@ class MergeIntoFile {
 
   apply(compiler) {
     if (compiler.hooks) {
-      const plugin = { name: 'MergeIntoFile' };
-      compiler.hooks.emit.tapAsync(plugin, this.run.bind(this));
+      if (webpackMajorVersion < 5) {
+        compiler.hooks.emit.tapAsync(plugin, this.run.bind(this));
+      } else {
+        compiler.hooks.compilation.tap(plugin, this.run.bind(this));
+        compiler.hooks.failed.tap(plugin, error => {
+          throw new Error(error);
+        });
+      }
     } else {
       compiler.plugin('emit', this.run.bind(this));
     }
@@ -59,8 +69,6 @@ class MergeIntoFile {
   }
 
   run(compilation, callback) {
-    var _this = this;
-
     const {
       files,
       transform,
@@ -70,7 +78,9 @@ class MergeIntoFile {
       transformFileName
     } = this.options;
     if (chunks && compilation.chunks && compilation.chunks.filter(chunk => chunks.indexOf(chunk.name) >= 0 && chunk.rendered).length === 0) {
-      callback();
+      if (typeof callback === 'function') {
+        callback();
+      }
       return;
     }
     const generatedFiles = {};
@@ -95,7 +105,6 @@ class MergeIntoFile {
     });
     const finalPromises = filesCanonical.map((() => {
       var _ref3 = _asyncToGenerator(function* (fileTransform) {
-        const { separator = '\n' } = _this.options;
         const listOfLists = yield Promise.all(fileTransform.src.map(function (path) {
           return listFiles(path, null);
         }));
@@ -103,7 +112,7 @@ class MergeIntoFile {
         const filesContentPromises = flattenedList.map(function (path) {
           return readFile(path, encoding || 'utf-8');
         });
-        const content = yield joinContent(filesContentPromises, separator);
+        const content = yield joinContent(filesContentPromises, '\n');
         const resultsFiles = yield fileTransform.dest(content);
         for (const resultsFile in resultsFiles) {
           if (typeof resultsFiles[resultsFile] === 'object') {
@@ -139,14 +148,24 @@ class MergeIntoFile {
             }
           }
           generatedFiles[newFileName] = newFileNameHashed;
-          compilation.assets[newFileNameHashed] = { // eslint-disable-line no-param-reassign
-            source() {
-              return resultsFiles[newFileName];
-            },
-            size() {
-              return resultsFiles[newFileName].length;
-            }
-          };
+          if (webpackMajorVersion < 5) {
+            compilation.assets[newFileNameHashed] = { // eslint-disable-line no-param-reassign
+              source() {
+                return resultsFiles[newFileName];
+              },
+              size() {
+                return resultsFiles[newFileName].length;
+              }
+            };
+          } else {
+            const { sources, Compilation } = require('webpack');
+            compilation.hooks.processAssets.tap({
+              name: plugin.name,
+              stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL
+            }, function () {
+              compilation.emitAsset(newFileNameHashed, new sources.RawSource(resultsFiles[newFileName]));
+            });
+          }
         });
       });
 
@@ -159,8 +178,16 @@ class MergeIntoFile {
       if (this.onComplete) {
         this.onComplete(generatedFiles);
       }
-      callback();
-    }).catch(error => callback(error));
+      if (typeof callback === 'function') {
+        callback();
+      }
+    }).catch(error => {
+      if (typeof callback === 'function') {
+        callback(error);
+      } else {
+        throw new Error(error);
+      }
+    });
   }
 }
 
