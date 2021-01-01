@@ -3,6 +3,10 @@ const glob = require('glob');
 const { promisify } = require('es6-promisify');
 const revHash = require('rev-hash');
 
+const plugin = { name: 'MergeIntoFile' };
+
+const webpackMajorVersion = Number(require('webpack/package.json').version.split('.')[0]);
+
 const readFile = promisify(fs.readFile);
 const listFiles = promisify(glob);
 
@@ -17,8 +21,14 @@ class MergeIntoFile {
 
   apply(compiler) {
     if (compiler.hooks) {
-      const plugin = { name: 'MergeIntoFile' };
-      compiler.hooks.emit.tapAsync(plugin, this.run.bind(this));
+      if (webpackMajorVersion < 5) {
+        compiler.hooks.emit.tapAsync(plugin, this.run.bind(this));
+      } else {      
+        compiler.hooks.compilation.tap(plugin, this.run.bind(this));
+        compiler.hooks.failed.tap(plugin, error => {
+          throw new Error(error);
+        });
+      }
     } else {
       compiler.plugin('emit', this.run.bind(this));
     }
@@ -49,8 +59,10 @@ class MergeIntoFile {
       transformFileName,
     } = this.options;
     if (chunks && compilation.chunks && compilation.chunks
-      .filter((chunk) => chunks.indexOf(chunk.name) >= 0 && chunk.rendered).length === 0) {
-      callback();
+      .filter(chunk => chunks.indexOf(chunk.name) >= 0 && chunk.rendered).length === 0) {
+        if (typeof(callback) === 'function') {
+          callback();
+        }
       return;
     }
     const generatedFiles = {};
@@ -115,14 +127,27 @@ class MergeIntoFile {
           }
         }
         generatedFiles[newFileName] = newFileNameHashed;
-        compilation.assets[newFileNameHashed] = { // eslint-disable-line no-param-reassign
-          source() {
-            return resultsFiles[newFileName];
-          },
-          size() {
-            return resultsFiles[newFileName].length;
-          },
-        };
+        if (compilation.hooks) {
+          const { sources, Compilation } = require('webpack');
+          compilation.hooks.processAssets.tap(
+            {
+              name: plugin.name,
+              stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL,
+            },
+            () => { 
+              compilation.emitAsset(newFileNameHashed, new sources.RawSource(resultsFiles[newFileName]))
+            }
+          );
+        } else {
+          compilation.assets[newFileNameHashed] = { // eslint-disable-line no-param-reassign
+            source() {
+              return resultsFiles[newFileName];
+            },
+            size() {
+              return resultsFiles[newFileName].length;
+            },
+          };
+        }
       });
     });
 
@@ -131,9 +156,17 @@ class MergeIntoFile {
         if (this.onComplete) {
           this.onComplete(generatedFiles);
         }
-        callback();
+        if (typeof(callback) === 'function') {
+          callback();
+        }
       })
-      .catch((error) => callback(error));
+      .catch(error => {
+        if (typeof(callback) === 'function') {
+          callback(error);
+        } else {
+          throw new Error(error);
+        }
+      });
   }
 }
 
