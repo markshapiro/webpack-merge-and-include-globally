@@ -6,8 +6,7 @@
   "scripts": {
     "test": "jest",
     "build": "webpack --progress && cp example/index.html dist/index.html",
-    "server": "webpack-dev-server --inline --colors --progress --display-error-details --display-cached --port 3000  --content-base example --open",
-    "start": "npm run server",
+    "start": "webpack serve",
     "lint": "eslint index.js index.test.js webpack.config.js --fix",
     "build-src": "babel index.js --out-file index.node6-compatible.js"
   },

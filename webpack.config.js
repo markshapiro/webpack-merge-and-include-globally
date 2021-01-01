@@ -6,6 +6,12 @@ const MergeIntoSingle = require('./index.node6-compatible.js');
 
 // Webpack Config
 const webpackConfig = {
+  devServer: {
+    contentBase: path.join(__dirname, 'example'),
+    compress: true,
+    port: 3000,
+    open: true,
+  },
   mode: 'none',
   entry: ['./example/main.js'],
   devtool: 'cheap-module-source-map',
