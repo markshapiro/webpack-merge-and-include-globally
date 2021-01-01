@@ -80,7 +80,7 @@ class MergeIntoFile {
     filesCanonical.forEach((fileTransform) => {
       if (typeof fileTransform.dest === 'string') {
         const destFileName = fileTransform.dest;
-        fileTransform.dest = code => ({ // eslint-disable-line no-param-reassign
+        fileTransform.dest = (code) => ({ // eslint-disable-line no-param-reassign
           [destFileName]: (transform && transform[destFileName])
             ? transform[destFileName](code)
             : code,
@@ -88,17 +88,17 @@ class MergeIntoFile {
       }
     });
     const finalPromises = filesCanonical.map(async (fileTransform) => {
-      const { separator = '\n'} = this.options;
-      const listOfLists = await Promise.all(fileTransform.src.map(path => listFiles(path, null)));
+      const { separator = '\n' } = this.options;
+      const listOfLists = await Promise.all(fileTransform.src.map((path) => listFiles(path, null)));
       const flattenedList = Array.prototype.concat.apply([], listOfLists);
-      const filesContentPromises = flattenedList.map(path => readFile(path, encoding || 'utf-8'));
+      const filesContentPromises = flattenedList.map((path) => readFile(path, encoding || 'utf-8'));
       const content = await joinContent(filesContentPromises, separator);
       const resultsFiles = await fileTransform.dest(content);
-      for (const resultsFile in resultsFiles) {
+      Object.keys(resultsFiles).map(async (resultsFile) => {
         if (typeof resultsFiles[resultsFile] === 'object') {
           resultsFiles[resultsFile] = await resultsFiles[resultsFile];
         }
-      }
+      });
       Object.keys(resultsFiles).forEach((newFileName) => {
         let newFileNameHashed = newFileName;
         const hasTransformFileNameFn = typeof transformFileName === 'function';
@@ -114,7 +114,7 @@ class MergeIntoFile {
 
             newFileNameHashed = transformFileName(fileNameBase, extension, hashPart);
           } else {
-            newFileNameHashed = newFileName.replace(/(\.min)?\.\w+(\.map)?$/, suffix => `-${hashPart}${suffix}`);
+            newFileNameHashed = newFileName.replace(/(\.min)?\.\w+(\.map)?$/, (suffix) => `-${hashPart}${suffix}`);
           }
 
           const fileId = newFileName.replace(/\.map$/, '').replace(/\.\w+$/, '');

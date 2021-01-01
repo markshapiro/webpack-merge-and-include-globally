@@ -1,12 +1,11 @@
-
-const MergeIntoSingle = require('./index.node6-compatible.js');
-// const MergeIntoSingle = require('./index.js');
-
 jest.mock('fs');
 jest.mock('glob');
 
 const fs = require('fs');
 const glob = require('glob');
+
+const MergeIntoSingle = require('./index.node6-compatible.js');
+// const MergeIntoSingle = require('./index.js');
 
 describe('MergeIntoFile', () => {
   const pathToFiles = {
@@ -59,7 +58,7 @@ describe('MergeIntoFile', () => {
         'script.js': [
           'file1.js',
           'file2.js',
-        ]
+        ],
       },
     });
     instance.apply({
@@ -88,7 +87,7 @@ describe('MergeIntoFile', () => {
         ],
       },
       transform: {
-        'script.js': val => `${val.toLowerCase()}`,
+        'script.js': (val) => `${val.toLowerCase()}`,
       },
     });
     instance.apply({
@@ -118,7 +117,7 @@ describe('MergeIntoFile', () => {
         ],
       },
       transform: {
-        'script.js': async val => `${val.toLowerCase()}`,
+        'script.js': async (val) => `${val.toLowerCase()}`,
       },
     });
     instance.apply({
@@ -141,7 +140,7 @@ describe('MergeIntoFile', () => {
       files: [
         {
           src: ['file1.js', 'file2.js'],
-          dest: val => ({
+          dest: (val) => ({
             'script.js': `${val.toLowerCase()}`,
           }),
         },

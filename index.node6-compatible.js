@@ -1,11 +1,8 @@
-'use strict';
+"use strict";
 
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-const fs = require('fs');
-const glob = require('glob');
-const { promisify } = require('es6-promisify');
-const revHash = require('rev-hash');
+var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
 
 const plugin = { name: 'MergeIntoFile' };
 
@@ -14,26 +11,102 @@ const webpackMajorVersion = Number(require('webpack/package.json').version.split
 const readFile = promisify(fs.readFile);
 const listFiles = promisify(glob);
 
-const joinContent = (() => {
-  var _ref = _asyncToGenerator(function* (promises, separator) {
-    return promises.reduce((() => {
-      var _ref2 = _asyncToGenerator(function* (acc, curr) {
-        return `${yield acc}${(yield acc).length ? separator : ''}${yield curr}`;
-      });
+var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/defineProperty"));
 
-      return function (_x3, _x4) {
-        return _ref2.apply(this, arguments);
-      };
-    })(), '');
-  });
+var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
+
+var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
+
+var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
+
+var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
+
+var fs = require('fs');
+
+var glob = require('glob');
+
+var _require = require('es6-promisify'),
+    promisify = _require.promisify;
+
+var revHash = require('rev-hash');
+
+var readFile = promisify(fs.readFile);
+var listFiles = promisify(glob);
+
+var joinContent = /*#__PURE__*/function () {
+  var _ref = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(promises, separator) {
+    return _regenerator["default"].wrap(function _callee2$(_context2) {
+      while (1) {
+        switch (_context2.prev = _context2.next) {
+          case 0:
+            return _context2.abrupt("return", promises.reduce( /*#__PURE__*/function () {
+              var _ref2 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(acc, curr) {
+                return _regenerator["default"].wrap(function _callee$(_context) {
+                  while (1) {
+                    switch (_context.prev = _context.next) {
+                      case 0:
+                        _context.t2 = "";
+                        _context.next = 3;
+                        return acc;
+
+                      case 3:
+                        _context.t3 = _context.sent;
+                        _context.t1 = _context.t2.concat.call(_context.t2, _context.t3);
+                        _context.next = 7;
+                        return acc;
+
+                      case 7:
+                        if (!_context.sent.length) {
+                          _context.next = 11;
+                          break;
+                        }
+
+                        _context.t4 = separator;
+                        _context.next = 12;
+                        break;
+
+                      case 11:
+                        _context.t4 = '';
+
+                      case 12:
+                        _context.t5 = _context.t4;
+                        _context.t0 = _context.t1.concat.call(_context.t1, _context.t5);
+                        _context.next = 16;
+                        return curr;
+
+                      case 16:
+                        _context.t6 = _context.sent;
+                        return _context.abrupt("return", _context.t0.concat.call(_context.t0, _context.t6));
+
+                      case 18:
+                      case "end":
+                        return _context.stop();
+                    }
+                  }
+                }, _callee);
+              }));
+
+              return function (_x3, _x4) {
+                return _ref2.apply(this, arguments);
+              };
+            }(), ''));
+
+          case 1:
+          case "end":
+            return _context2.stop();
+        }
+      }
+    }, _callee2);
+  }));
 
   return function joinContent(_x, _x2) {
     return _ref.apply(this, arguments);
   };
-})();
+}();
 
-class MergeIntoFile {
-  constructor(options, onComplete) {
+var MergeIntoFile = /*#__PURE__*/function () {
+  function MergeIntoFile(options, onComplete) {
+    (0, _classCallCheck2["default"])(this, MergeIntoFile);
     this.options = options;
     this.onComplete = onComplete;
   }
@@ -51,22 +124,25 @@ class MergeIntoFile {
     } else {
       compiler.plugin('emit', this.run.bind(this));
     }
-  }
+  }, {
+    key: "run",
+    value: function run(compilation, callback) {
+      var _this = this;
 
-  static getHashOfRelatedFile(assets, fileName) {
-    let hashPart = null;
-    Object.keys(assets).forEach(existingFileName => {
-      const match = existingFileName.match(/-([0-9a-f]+)(\.min)?(\.\w+)(\.map)?$/);
-      const fileHashPart = match && match.length && match[1];
-      if (fileHashPart) {
-        const canonicalFileName = existingFileName.replace(`-${fileHashPart}`, '').replace(/\.map$/, '');
-        if (canonicalFileName === fileName.replace(/\.map$/, '')) {
-          hashPart = fileHashPart;
-        }
+      var _this$options = this.options,
+          files = _this$options.files,
+          transform = _this$options.transform,
+          encoding = _this$options.encoding,
+          chunks = _this$options.chunks,
+          hash = _this$options.hash,
+          transformFileName = _this$options.transformFileName;
+
+      if (chunks && compilation.chunks && compilation.chunks.filter(function (chunk) {
+        return chunks.indexOf(chunk.name) >= 0 && chunk.rendered;
+      }).length === 0) {
+        callback();
+        return;
       }
-    });
-    return hashPart;
-  }
 
   run(compilation, callback) {
     var _this = this;
@@ -103,45 +179,32 @@ class MergeIntoFile {
         fileTransform.dest = code => ({ // eslint-disable-line no-param-reassign
           [destFileName]: transform && transform[destFileName] ? transform[destFileName](code) : code
         });
+      } else {
+        filesCanonical = files;
       }
-    });
-    const finalPromises = filesCanonical.map((() => {
-      var _ref3 = _asyncToGenerator(function* (fileTransform) {
-        const { separator = '\n' } = _this.options;
-        const listOfLists = yield Promise.all(fileTransform.src.map(function (path) {
-          return listFiles(path, null);
-        }));
-        const flattenedList = Array.prototype.concat.apply([], listOfLists);
-        const filesContentPromises = flattenedList.map(function (path) {
-          return readFile(path, encoding || 'utf-8');
-        });
-        const content = yield joinContent(filesContentPromises, separator);
-        const resultsFiles = yield fileTransform.dest(content);
-        for (const resultsFile in resultsFiles) {
-          if (typeof resultsFiles[resultsFile] === 'object') {
-            resultsFiles[resultsFile] = yield resultsFiles[resultsFile];
-          }
+
+      filesCanonical.forEach(function (fileTransform) {
+        if (typeof fileTransform.dest === 'string') {
+          var destFileName = fileTransform.dest;
+
+          fileTransform.dest = function (code) {
+            return (0, _defineProperty2["default"])({}, destFileName, transform && transform[destFileName] ? transform[destFileName](code) : code);
+          };
         }
-        Object.keys(resultsFiles).forEach(function (newFileName) {
-          let newFileNameHashed = newFileName;
-          const hasTransformFileNameFn = typeof transformFileName === 'function';
+      });
+      var finalPromises = filesCanonical.map( /*#__PURE__*/function () {
+        var _ref4 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(fileTransform) {
+          var _this$options$separat, separator, listOfLists, flattenedList, filesContentPromises, content, resultsFiles;
 
-          if (hash || hasTransformFileNameFn) {
-            const hashPart = MergeIntoFile.getHashOfRelatedFile(compilation.assets, newFileName) || revHash(resultsFiles[newFileName]);
-
-            if (hasTransformFileNameFn) {
-              const extensionPattern = /\.[^.]*$/g;
-              const fileNameBase = newFileName.replace(extensionPattern, '');
-              const [extension] = newFileName.match(extensionPattern);
-
-              newFileNameHashed = transformFileName(fileNameBase, extension, hashPart);
-            } else {
-              newFileNameHashed = newFileName.replace(/(\.min)?\.\w+(\.map)?$/, function (suffix) {
-                return `-${hashPart}${suffix}`;
-              });
-            }
-
-            const fileId = newFileName.replace(/\.map$/, '').replace(/\.\w+$/, '');
+          return _regenerator["default"].wrap(function _callee4$(_context4) {
+            while (1) {
+              switch (_context4.prev = _context4.next) {
+                case 0:
+                  _this$options$separat = _this.options.separator, separator = _this$options$separat === void 0 ? '\n' : _this$options$separat;
+                  _context4.next = 3;
+                  return Promise.all(fileTransform.src.map(function (path) {
+                    return listFiles(path, null);
+                  }));
 
             if (typeof compilation.addChunk === 'function') {
               const chunk = compilation.addChunk(fileId);
@@ -171,11 +234,17 @@ class MergeIntoFile {
           }
         });
       });
+    }
+  }], [{
+    key: "getHashOfRelatedFile",
+    value: function getHashOfRelatedFile(assets, fileName) {
+      var hashPart = null;
+      Object.keys(assets).forEach(function (existingFileName) {
+        var match = existingFileName.match(/-([0-9a-f]+)(\.min)?(\.\w+)(\.map)?$/);
+        var fileHashPart = match && match.length && match[1];
 
-      return function (_x5) {
-        return _ref3.apply(this, arguments);
-      };
-    })());
+        if (fileHashPart) {
+          var canonicalFileName = existingFileName.replace("-".concat(fileHashPart), '').replace(/\.map$/, '');
 
     Promise.all(finalPromises).then(() => {
       if (this.onComplete) {
