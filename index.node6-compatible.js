@@ -117,7 +117,7 @@ var MergeIntoFile = /*#__PURE__*/function () {
         if (webpackMajorVersion < 5) {
           compiler.hooks.emit.tapAsync(plugin, this.run.bind(this));
         } else {
-          compiler.hooks.compilation.tap(plugin, this.run.bind(this));
+          compiler.hooks.thisCompilation.tap(plugin, this.run.bind(this));
           compiler.hooks.failed.tap(plugin, function (error) {
             throw new Error(error);
           });

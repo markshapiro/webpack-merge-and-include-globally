@@ -24,7 +24,7 @@ class MergeIntoFile {
       if (webpackMajorVersion < 5) {
         compiler.hooks.emit.tapAsync(plugin, this.run.bind(this));
       } else {      
-        compiler.hooks.compilation.tap(plugin, this.run.bind(this));
+        compiler.hooks.thisCompilation.tap(plugin, this.run.bind(this));
         compiler.hooks.failed.tap(plugin, error => {
           throw new Error(error);
         });
