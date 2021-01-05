@@ -265,7 +265,7 @@ var MergeIntoFile = /*#__PURE__*/function () {
 
                     generatedFiles[newFileName] = newFileNameHashed;
 
-                    if (compilation.hooks) {
+                    if (webpackMajorVersion >= 5) {
                       var _require2 = require('webpack'),
                           sources = _require2.sources,
                           Compilation = _require2.Compilation;

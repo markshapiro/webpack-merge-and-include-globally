@@ -127,7 +127,7 @@ class MergeIntoFile {
           }
         }
         generatedFiles[newFileName] = newFileNameHashed;
-        if (compilation.hooks) {
+        if (webpackMajorVersion >= 5) {
           const { sources, Compilation } = require('webpack');
           compilation.hooks.processAssets.tap(
             {
