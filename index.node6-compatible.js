@@ -25,10 +25,13 @@ var _require = require('es6-promisify'),
 
 var revHash = require('rev-hash');
 
+var _require2 = require('webpack'),
+    sources = _require2.sources,
+    Compilation = _require2.Compilation;
+
 var plugin = {
   name: 'MergeIntoFile'
 };
-var webpackMajorVersion = Number(require('webpack/package.json').version.split('.')[0]);
 var readFile = promisify(fs.readFile);
 var listFiles = promisify(glob);
 
@@ -113,15 +116,17 @@ var MergeIntoFile = /*#__PURE__*/function () {
   (0, _createClass2["default"])(MergeIntoFile, [{
     key: "apply",
     value: function apply(compiler) {
+      var _this = this;
+
       if (compiler.hooks) {
-        if (webpackMajorVersion < 5) {
-          compiler.hooks.emit.tapAsync(plugin, this.run.bind(this));
-        } else {
-          compiler.hooks.thisCompilation.tap(plugin, this.run.bind(this));
-          compiler.hooks.failed.tap(plugin, function (error) {
-            throw new Error(error);
+        compiler.hooks.thisCompilation.tap(plugin.name, function (compilation) {
+          compilation.hooks.processAssets.tapAsync({
+            name: plugin.name,
+            stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL
+          }, function (_, callback) {
+            return _this.run(compilation, callback);
           });
-        }
+        });
       } else {
         compiler.plugin('emit', this.run.bind(this));
       }
@@ -129,7 +134,7 @@ var MergeIntoFile = /*#__PURE__*/function () {
   }, {
     key: "run",
     value: function run(compilation, callback) {
-      var _this = this;
+      var _this2 = this;
 
       var _this$options = this.options,
           files = _this$options.files,
@@ -174,13 +179,13 @@ var MergeIntoFile = /*#__PURE__*/function () {
       });
       var finalPromises = filesCanonical.map( /*#__PURE__*/function () {
         var _ref4 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(fileTransform) {
-          var _this$options$separat, separator, listOfLists, flattenedList, filesContentPromises, content, resultsFiles;
+          var _this2$options$separa, separator, listOfLists, flattenedList, filesContentPromises, content, resultsFiles;
 
           return _regenerator["default"].wrap(function _callee4$(_context4) {
             while (1) {
               switch (_context4.prev = _context4.next) {
                 case 0:
-                  _this$options$separat = _this.options.separator, separator = _this$options$separat === void 0 ? '\n' : _this$options$separat;
+                  _this2$options$separa = _this2.options.separator, separator = _this2$options$separa === void 0 ? '\n' : _this2$options$separa;
                   _context4.next = 3;
                   return Promise.all(fileTransform.src.map(function (path) {
                     return listFiles(path, null);
@@ -265,17 +270,8 @@ var MergeIntoFile = /*#__PURE__*/function () {
 
                     generatedFiles[newFileName] = newFileNameHashed;
 
-                    if (webpackMajorVersion >= 5) {
-                      var _require2 = require('webpack'),
-                          sources = _require2.sources,
-                          Compilation = _require2.Compilation;
-
-                      compilation.hooks.processAssets.tap({
-                        name: plugin.name,
-                        stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL
-                      }, function () {
-                        compilation.emitAsset(newFileNameHashed, new sources.RawSource(resultsFiles[newFileName]));
-                      });
+                    if (compilation.emitAsset) {
+                      compilation.emitAsset(newFileNameHashed, new sources.RawSource(resultsFiles[newFileName]));
                     } else {
                       compilation.assets[newFileNameHashed] = {
                         // eslint-disable-line no-param-reassign
@@ -302,8 +298,8 @@ var MergeIntoFile = /*#__PURE__*/function () {
         };
       }());
       Promise.all(finalPromises).then(function () {
-        if (_this.onComplete) {
-          _this.onComplete(generatedFiles);
+        if (_this2.onComplete) {
+          _this2.onComplete(generatedFiles);
         }
 
         if (typeof callback === 'function') {

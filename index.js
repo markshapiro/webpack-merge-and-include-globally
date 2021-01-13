@@ -2,10 +2,9 @@ const fs = require('fs');
 const glob = require('glob');
 const { promisify } = require('es6-promisify');
 const revHash = require('rev-hash');
+const { sources, Compilation } = require('webpack');
 
 const plugin = { name: 'MergeIntoFile' };
-
-const webpackMajorVersion = Number(require('webpack/package.json').version.split('.')[0]);
 
 const readFile = promisify(fs.readFile);
 const listFiles = promisify(glob);
@@ -21,14 +20,18 @@ class MergeIntoFile {
 
   apply(compiler) {
     if (compiler.hooks) {
-      if (webpackMajorVersion < 5) {
-        compiler.hooks.emit.tapAsync(plugin, this.run.bind(this));
-      } else {      
-        compiler.hooks.thisCompilation.tap(plugin, this.run.bind(this));
-        compiler.hooks.failed.tap(plugin, error => {
-          throw new Error(error);
-        });
-      }
+      compiler.hooks.thisCompilation.tap(
+        plugin.name,
+        (compilation) => {
+          compilation.hooks.processAssets.tapAsync(
+            {
+              name: plugin.name,
+              stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL,
+            },
+            (_, callback) => this.run(compilation, callback),
+          );
+        },
+      );
     } else {
       compiler.plugin('emit', this.run.bind(this));
     }
@@ -59,10 +62,10 @@ class MergeIntoFile {
       transformFileName,
     } = this.options;
     if (chunks && compilation.chunks && compilation.chunks
-      .filter(chunk => chunks.indexOf(chunk.name) >= 0 && chunk.rendered).length === 0) {
-        if (typeof(callback) === 'function') {
-          callback();
-        }
+      .filter((chunk) => chunks.indexOf(chunk.name) >= 0 && chunk.rendered).length === 0) {
+      if (typeof (callback) === 'function') {
+        callback();
+      }
       return;
     }
     const generatedFiles = {};
@@ -127,17 +130,9 @@ class MergeIntoFile {
           }
         }
         generatedFiles[newFileName] = newFileNameHashed;
-        if (webpackMajorVersion >= 5) {
-          const { sources, Compilation } = require('webpack');
-          compilation.hooks.processAssets.tap(
-            {
-              name: plugin.name,
-              stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL,
-            },
-            () => { 
-              compilation.emitAsset(newFileNameHashed, new sources.RawSource(resultsFiles[newFileName]))
-            }
-          );
+        if (compilation.emitAsset) {
+          compilation.emitAsset(newFileNameHashed,
+            new sources.RawSource(resultsFiles[newFileName]));
         } else {
           compilation.assets[newFileNameHashed] = { // eslint-disable-line no-param-reassign
             source() {
@@ -156,12 +151,12 @@ class MergeIntoFile {
         if (this.onComplete) {
           this.onComplete(generatedFiles);
         }
-        if (typeof(callback) === 'function') {
+        if (typeof (callback) === 'function') {
           callback();
         }
       })
-      .catch(error => {
-        if (typeof(callback) === 'function') {
+      .catch((error) => {
+        if (typeof (callback) === 'function') {
           callback(error);
         } else {
           throw new Error(error);
