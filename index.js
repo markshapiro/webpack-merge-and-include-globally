@@ -23,13 +23,17 @@ class MergeIntoFile {
       compiler.hooks.thisCompilation.tap(
         plugin.name,
         (compilation) => {
-          compilation.hooks.processAssets.tapAsync(
-            {
-              name: plugin.name,
-              stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL,
-            },
-            (_, callback) => this.run(compilation, callback),
-          );
+          if (compilation.hooks.processAssets) {
+            compilation.hooks.processAssets.tapAsync(
+              {
+                name: plugin.name,
+                stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL,
+              },
+              (_, callback) => this.run(compilation, callback),
+            );
+          } else {
+            compiler.hooks.emit.tapAsync(plugin.name, this.run.bind(this));
+          }
         },
       );
     } else {
@@ -130,11 +134,12 @@ class MergeIntoFile {
           }
         }
         generatedFiles[newFileName] = newFileNameHashed;
-        if (compilation.emitAsset) {
-          compilation.emitAsset(newFileNameHashed,
-            new sources.RawSource(resultsFiles[newFileName]));
+
+        let rawSource;
+        if (sources) {
+          rawSource = new sources.RawSource(resultsFiles[newFileName]);
         } else {
-          compilation.assets[newFileNameHashed] = { // eslint-disable-line no-param-reassign
+          rawSource = {
             source() {
               return resultsFiles[newFileName];
             },
@@ -142,6 +147,13 @@ class MergeIntoFile {
               return resultsFiles[newFileName].length;
             },
           };
+        }
+
+        if (compilation.emitAsset) {
+          compilation.emitAsset(newFileNameHashed, rawSource);
+        } else {
+          // eslint-disable-next-line no-param-reassign
+          compilation.assets[newFileNameHashed] = rawSource;
         }
       });
     });

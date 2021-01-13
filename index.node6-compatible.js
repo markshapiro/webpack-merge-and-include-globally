@@ -120,12 +120,16 @@ var MergeIntoFile = /*#__PURE__*/function () {
 
       if (compiler.hooks) {
         compiler.hooks.thisCompilation.tap(plugin.name, function (compilation) {
-          compilation.hooks.processAssets.tapAsync({
-            name: plugin.name,
-            stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL
-          }, function (_, callback) {
-            return _this.run(compilation, callback);
-          });
+          if (compilation.hooks.processAssets) {
+            compilation.hooks.processAssets.tapAsync({
+              name: plugin.name,
+              stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL
+            }, function (_, callback) {
+              return _this.run(compilation, callback);
+            });
+          } else {
+            compiler.hooks.emit.tapAsync(plugin.name, _this.run.bind(_this));
+          }
         });
       } else {
         compiler.plugin('emit', this.run.bind(this));
@@ -269,12 +273,12 @@ var MergeIntoFile = /*#__PURE__*/function () {
                     }
 
                     generatedFiles[newFileName] = newFileNameHashed;
+                    var rawSource;
 
-                    if (compilation.emitAsset) {
-                      compilation.emitAsset(newFileNameHashed, new sources.RawSource(resultsFiles[newFileName]));
+                    if (sources) {
+                      rawSource = new sources.RawSource(resultsFiles[newFileName]);
                     } else {
-                      compilation.assets[newFileNameHashed] = {
-                        // eslint-disable-line no-param-reassign
+                      rawSource = {
                         source: function source() {
                           return resultsFiles[newFileName];
                         },
@@ -282,6 +286,13 @@ var MergeIntoFile = /*#__PURE__*/function () {
                           return resultsFiles[newFileName].length;
                         }
                       };
+                    }
+
+                    if (compilation.emitAsset) {
+                      compilation.emitAsset(newFileNameHashed, rawSource);
+                    } else {
+                      // eslint-disable-next-line no-param-reassign
+                      compilation.assets[newFileNameHashed] = rawSource;
                     }
                   });
 
