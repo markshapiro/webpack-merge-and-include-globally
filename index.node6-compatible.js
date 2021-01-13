@@ -182,64 +182,61 @@ var MergeIntoFile = /*#__PURE__*/function () {
         }
       });
       var finalPromises = filesCanonical.map( /*#__PURE__*/function () {
-        var _ref4 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(fileTransform) {
-          var _this2$options$separa, separator, listOfLists, flattenedList, filesContentPromises, content, resultsFiles;
+        var _ref4 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(fileTransform) {
+          var _this2$options$separa, separator, listOfLists, flattenedList, filesContentPromises, content, resultsFiles, resultsFile;
 
-          return _regenerator["default"].wrap(function _callee4$(_context4) {
+          return _regenerator["default"].wrap(function _callee3$(_context3) {
             while (1) {
-              switch (_context4.prev = _context4.next) {
+              switch (_context3.prev = _context3.next) {
                 case 0:
                   _this2$options$separa = _this2.options.separator, separator = _this2$options$separa === void 0 ? '\n' : _this2$options$separa;
-                  _context4.next = 3;
+                  _context3.next = 3;
                   return Promise.all(fileTransform.src.map(function (path) {
                     return listFiles(path, null);
                   }));
 
                 case 3:
-                  listOfLists = _context4.sent;
+                  listOfLists = _context3.sent;
                   flattenedList = Array.prototype.concat.apply([], listOfLists);
                   filesContentPromises = flattenedList.map(function (path) {
                     return readFile(path, encoding || 'utf-8');
                   });
-                  _context4.next = 8;
+                  _context3.next = 8;
                   return joinContent(filesContentPromises, separator);
 
                 case 8:
-                  content = _context4.sent;
-                  _context4.next = 11;
+                  content = _context3.sent;
+                  _context3.next = 11;
                   return fileTransform.dest(content);
 
                 case 11:
-                  resultsFiles = _context4.sent;
-                  Object.keys(resultsFiles).map( /*#__PURE__*/function () {
-                    var _ref5 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(resultsFile) {
-                      return _regenerator["default"].wrap(function _callee3$(_context3) {
-                        while (1) {
-                          switch (_context3.prev = _context3.next) {
-                            case 0:
-                              if (!((0, _typeof2["default"])(resultsFiles[resultsFile]) === 'object')) {
-                                _context3.next = 4;
-                                break;
-                              }
+                  resultsFiles = _context3.sent;
+                  _context3.t0 = _regenerator["default"].keys(resultsFiles);
 
-                              _context3.next = 3;
-                              return resultsFiles[resultsFile];
+                case 13:
+                  if ((_context3.t1 = _context3.t0()).done) {
+                    _context3.next = 21;
+                    break;
+                  }
 
-                            case 3:
-                              resultsFiles[resultsFile] = _context3.sent;
+                  resultsFile = _context3.t1.value;
 
-                            case 4:
-                            case "end":
-                              return _context3.stop();
-                          }
-                        }
-                      }, _callee3);
-                    }));
+                  if (!((0, _typeof2["default"])(resultsFiles[resultsFile]) === 'object')) {
+                    _context3.next = 19;
+                    break;
+                  }
 
-                    return function (_x6) {
-                      return _ref5.apply(this, arguments);
-                    };
-                  }());
+                  _context3.next = 18;
+                  return resultsFiles[resultsFile];
+
+                case 18:
+                  resultsFiles[resultsFile] = _context3.sent;
+
+                case 19:
+                  _context3.next = 13;
+                  break;
+
+                case 21:
                   Object.keys(resultsFiles).forEach(function (newFileName) {
                     var newFileNameHashed = newFileName;
                     var hasTransformFileNameFn = typeof transformFileName === 'function';
@@ -296,12 +293,12 @@ var MergeIntoFile = /*#__PURE__*/function () {
                     }
                   });
 
-                case 14:
+                case 22:
                 case "end":
-                  return _context4.stop();
+                  return _context3.stop();
               }
             }
-          }, _callee4);
+          }, _callee3);
         }));
 
         return function (_x5) {

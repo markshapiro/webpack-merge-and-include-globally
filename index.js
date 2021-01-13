@@ -101,11 +101,11 @@ class MergeIntoFile {
       const filesContentPromises = flattenedList.map((path) => readFile(path, encoding || 'utf-8'));
       const content = await joinContent(filesContentPromises, separator);
       const resultsFiles = await fileTransform.dest(content);
-      Object.keys(resultsFiles).map(async (resultsFile) => {
+      for (const resultsFile in resultsFiles) {
         if (typeof resultsFiles[resultsFile] === 'object') {
           resultsFiles[resultsFile] = await resultsFiles[resultsFile];
         }
-      });
+      }
       Object.keys(resultsFiles).forEach((newFileName) => {
         let newFileNameHashed = newFileName;
         const hasTransformFileNameFn = typeof transformFileName === 'function';
