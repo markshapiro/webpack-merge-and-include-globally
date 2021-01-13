@@ -101,8 +101,10 @@ class MergeIntoFile {
       const filesContentPromises = flattenedList.map((path) => readFile(path, encoding || 'utf-8'));
       const content = await joinContent(filesContentPromises, separator);
       const resultsFiles = await fileTransform.dest(content);
+      // eslint-disable-next-line no-restricted-syntax
       for (const resultsFile in resultsFiles) {
         if (typeof resultsFiles[resultsFile] === 'object') {
+          // eslint-disable-next-line no-await-in-loop
           resultsFiles[resultsFile] = await resultsFiles[resultsFile];
         }
       }
