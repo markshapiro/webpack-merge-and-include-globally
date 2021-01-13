@@ -275,7 +275,7 @@ var MergeIntoFile = /*#__PURE__*/function () {
                     generatedFiles[newFileName] = newFileNameHashed;
                     var rawSource;
 
-                    if (sources) {
+                    if (sources && sources.RawSource) {
                       rawSource = new sources.RawSource(resultsFiles[newFileName]);
                     } else {
                       rawSource = {

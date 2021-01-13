@@ -136,7 +136,7 @@ class MergeIntoFile {
         generatedFiles[newFileName] = newFileNameHashed;
 
         let rawSource;
-        if (sources) {
+        if (sources && sources.RawSource) {
           rawSource = new sources.RawSource(resultsFiles[newFileName]);
         } else {
           rawSource = {
