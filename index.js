@@ -20,6 +20,7 @@ class MergeIntoFile {
 
   apply(compiler) {
     if (compiler.hooks) {
+      let emitHookSet = false;
       compiler.hooks.thisCompilation.tap(
         plugin.name,
         (compilation) => {
@@ -31,7 +32,8 @@ class MergeIntoFile {
               },
               (_, callback) => this.run(compilation, callback),
             );
-          } else {
+          } else if (!emitHookSet) {
+            emitHookSet = true;
             compiler.hooks.emit.tapAsync(plugin.name, this.run.bind(this));
           }
         },

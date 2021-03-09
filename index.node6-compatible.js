@@ -119,6 +119,7 @@ var MergeIntoFile = /*#__PURE__*/function () {
       var _this = this;
 
       if (compiler.hooks) {
+        var emitHookSet = false;
         compiler.hooks.thisCompilation.tap(plugin.name, function (compilation) {
           if (compilation.hooks.processAssets) {
             compilation.hooks.processAssets.tapAsync({
@@ -127,7 +128,8 @@ var MergeIntoFile = /*#__PURE__*/function () {
             }, function (_, callback) {
               return _this.run(compilation, callback);
             });
-          } else {
+          } else if (!emitHookSet) {
+            emitHookSet = true;
             compiler.hooks.emit.tapAsync(plugin.name, _this.run.bind(_this));
           }
         });
