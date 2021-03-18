@@ -267,7 +267,12 @@ var MergeIntoFile = /*#__PURE__*/function () {
                         var chunk = compilation.addChunk(fileId);
                         chunk.id = fileId;
                         chunk.ids = [chunk.id];
-                        chunk.files.push(newFileNameHashed);
+
+                        if (chunk.files instanceof Set) {
+                          chunk.files.add(newFileNameHashed);
+                        } else {
+                          chunk.files.push(newFileNameHashed);
+                        }
                       }
                     }
 
