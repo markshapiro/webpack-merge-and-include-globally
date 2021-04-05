@@ -135,8 +135,29 @@ default: false
 set `true` to append version hash before file extension.
 
 you can get names of generated files mapped to original by passing callback function as second argument to plugin: 
-```
+```javascript
 new MergeIntoSingle({ ... }, filesMap => { ... }),
+```
+
+#### transformFileName
+default: undefined
+
+also you can pass function for change output file name with hash
+```javascript
+new MergeIntoSingle({
+  ...,
+  transformFileName: (fileNameBase, extension, hash) => `${fileName}.[${hash}]${extension}`,
+  // bundle.[somehash].js
+}),
+
+//or
+
+new MergeIntoSingle({
+  ...,
+  transformFileName: (fileNameBase, extension, hash) => `${fileNameBase}${extension}?hash=${hash}`,
+  // bundle.js?hash=somehash
+}),
+
 ```
 
 #### encoding
@@ -144,6 +165,18 @@ new MergeIntoSingle({ ... }, filesMap => { ... }),
 default: 'utf-8'
 
 encoding of node.js reading
+
+#### chunks
+
+default: undefined
+
+array of entry points (strings) for which this plugin should run only
+
+#### separator
+
+default: '\n'
+
+string used between files when joining them together
 
 ### Working Example
 

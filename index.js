@@ -4,6 +4,9 @@ const { promisify } = require('es6-promisify');
 const revHash = require('rev-hash');
 const { SourceMapGenerator } = require('source-map');
 const path = require('path');
+const { sources, Compilation } = require('webpack');
+
+const plugin = { name: 'MergeIntoFile' };
 
 const readFile = promisify(fs.readFile);
 const listFiles = promisify(glob);
@@ -57,8 +60,24 @@ class MergeIntoFile {
 
   apply(compiler) {
     if (compiler.hooks) {
-      const plugin = { name: 'MergeIntoFile' };
-      compiler.hooks.emit.tapAsync(plugin, this.run.bind(this));
+      let emitHookSet = false;
+      compiler.hooks.thisCompilation.tap(
+        plugin.name,
+        (compilation) => {
+          if (compilation.hooks.processAssets) {
+            compilation.hooks.processAssets.tapAsync(
+              {
+                name: plugin.name,
+                stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL,
+              },
+              (_, callback) => this.run(compilation, callback),
+            );
+          } else if (!emitHookSet) {
+            emitHookSet = true;
+            compiler.hooks.emit.tapAsync(plugin.name, this.run.bind(this));
+          }
+        },
+      );
     } else {
       compiler.plugin('emit', this.run.bind(this));
     }
@@ -80,7 +99,22 @@ class MergeIntoFile {
   }
 
   run(compilation, callback) {
-    const { files, transform, encoding, hash, sourceMap } = this.options;
+    const {
+      files,
+      transform,
+      encoding,
+      chunks,
+      hash,
+      transformFileName,
+      sourceMap,
+    } = this.options;
+    if (chunks && compilation.chunks && compilation.chunks
+      .filter((chunk) => chunks.indexOf(chunk.name) >= 0 && chunk.rendered).length === 0) {
+      if (typeof (callback) === 'function') {
+        callback();
+      }
+      return;
+    }
     const generatedFiles = {};
     let filesCanonical = [];
     if (!Array.isArray(files)) {
@@ -107,33 +141,68 @@ class MergeIntoFile {
     const sourceMapRoot = sourceMap && sourceMap.sourceRoot;
     const sourceMapInlineSources = sourceMap && sourceMap.inlineSources;
     const finalPromises = filesCanonical.map(async (fileTransform) => {
-      const listOfLists = await Promise.all(fileTransform.src.map(path => listFiles(path, null)));
+      const { separator = '\n' } = this.options;
+      const listOfLists = await Promise.all(fileTransform.src.map((path) => listFiles(path, null)));
       const flattenedList = Array.prototype.concat.apply([], listOfLists);
-      const filesContentPromises = flattenedList.map(path => ({ path, content: readFile(path, 'utf-8') }));
-      const content = sourceMapEnabled ? await joinContentWithMap(filesContentPromises, '\n', sourceMapRoot, sourceMapInlineSources) : await joinContent(filesContentPromises, '\n');
+      const filesContentPromises = flattenedList.map(path => ({ path, content: readFile(path, encoding || 'utf-8') }));
+      const content = sourceMapEnabled ? await joinContentWithMap(filesContentPromises, separator, sourceMapRoot, sourceMapInlineSources) : await joinContent(filesContentPromises, separator);
       const resultsFiles = await fileTransform.dest(content.code, content.map);
+      // eslint-disable-next-line no-restricted-syntax
+      for (const resultsFile in resultsFiles) {
+        if (typeof resultsFiles[resultsFile] === 'object') {
+          // eslint-disable-next-line no-await-in-loop
+          resultsFiles[resultsFile] = await resultsFiles[resultsFile];
+        }
+      }
       Object.keys(resultsFiles).forEach((newFileName) => {
         let newFileNameHashed = newFileName;
-        if (hash) {
+        const hasTransformFileNameFn = typeof transformFileName === 'function';
+
+        if (hash || hasTransformFileNameFn) {
           const hashPart = MergeIntoFile.getHashOfRelatedFile(compilation.assets, newFileName)
-            || revHash(resultsFiles[newFileName]);
-          newFileNameHashed = newFileName.replace(/(\.min)?\.\w+(\.map)?$/, suffix => `-${hashPart}${suffix}`);
+          || revHash(resultsFiles[newFileName]);
+
+          if (hasTransformFileNameFn) {
+            const extensionPattern = /\.[^.]*$/g;
+            const fileNameBase = newFileName.replace(extensionPattern, '');
+            const [extension] = newFileName.match(extensionPattern);
+
+            newFileNameHashed = transformFileName(fileNameBase, extension, hashPart);
+          } else {
+            newFileNameHashed = newFileName.replace(/(\.min)?\.\w+(\.map)?$/, (suffix) => `-${hashPart}${suffix}`);
+          }
 
           const fileId = newFileName.replace(/\.map$/, '').replace(/\.\w+$/, '');
-          const chunk = compilation.addChunk(fileId);
-          chunk.id = fileId;
-          chunk.ids = [chunk.id];
-          chunk.files.push(newFileNameHashed);
+
+          if (typeof compilation.addChunk === 'function') {
+            const chunk = compilation.addChunk(fileId);
+            chunk.id = fileId;
+            chunk.ids = [chunk.id];
+            chunk.files.push(newFileNameHashed);
+          }
         }
         generatedFiles[newFileName] = newFileNameHashed;
-        compilation.assets[newFileNameHashed] = {   // eslint-disable-line no-param-reassign
-          source() {
-            return resultsFiles[newFileName];
-          },
-          size() {
-            return resultsFiles[newFileName].length;
-          },
-        };
+
+        let rawSource;
+        if (sources && sources.RawSource) {
+          rawSource = new sources.RawSource(resultsFiles[newFileName]);
+        } else {
+          rawSource = {
+            source() {
+              return resultsFiles[newFileName];
+            },
+            size() {
+              return resultsFiles[newFileName].length;
+            },
+          };
+        }
+
+        if (compilation.emitAsset) {
+          compilation.emitAsset(newFileNameHashed, rawSource);
+        } else {
+          // eslint-disable-next-line no-param-reassign
+          compilation.assets[newFileNameHashed] = rawSource;
+        }
       });
     });
 
@@ -142,9 +211,17 @@ class MergeIntoFile {
         if (this.onComplete) {
           this.onComplete(generatedFiles);
         }
-        callback();
+        if (typeof (callback) === 'function') {
+          callback();
+        }
       })
-      .catch(error => callback(error));
+      .catch((error) => {
+        if (typeof (callback) === 'function') {
+          callback(error);
+        } else {
+          throw new Error(error);
+        }
+      });
   }
 }
 
